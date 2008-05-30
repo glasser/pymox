@@ -2,8 +2,6 @@
 
 *TODO*: update everything from internal wiki past revision 1.25
 
-*TODO*: figure out if I need to indent code blocks?
-
 = Introduction =
 
 Mox is a mock object framework for Python.
@@ -566,11 +564,11 @@ There are all kinds of other comparators for simple parameter checking.  If you 
 complex logic to check the value, you can even use a callable to verify it.
 
 {{{
-  def testCreatePersonWithAccess(self):
-    self.dao.InsertPerson(test_person, Func(ValidAuditRecord)).AndReturn(HUGE_PRIMARY_KEY)
-    self.mox.ReplayAll()
-    self.manager.CreatePerson(test_person, 'stevepm')
-    self.mox.VerifyAll()
+def testCreatePersonWithAccess(self):
+  self.dao.InsertPerson(test_person, Func(ValidAuditRecord)).AndReturn(HUGE_PRIMARY_KEY)
+  self.mox.ReplayAll()
+  self.manager.CreatePerson(test_person, 'stevepm')
+  self.mox.VerifyAll()
 
 def ValidAuditRecord(audit_record):
   return (audit_record.user() == 'stevepm' and audit_record.type() == 'insert')
