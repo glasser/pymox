@@ -290,7 +290,7 @@ behavior, you probably want to use a Comparator.
 
 You can write your own comparators.  It's easy!
 
-== MockAnything ==
+== `MockAnything` ==
 
 Some classes do not provide public interfaces; for example, they might
 use `__getattribute__` to dynamically create their interface.  For
