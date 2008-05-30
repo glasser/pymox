@@ -2,13 +2,9 @@
 
 *TODO*: update everything from internal wiki past revision 1.25
 
-*TODO*: shift everything down a header level?
-
 *TODO*: figure out if I need to indent code blocks?
 
-= Mox =
-
-== Introduction ==
+= Introduction =
 
 Mox is a mock object framework for Python.
 
@@ -19,11 +15,11 @@ own! It mocks the public/protected interfaces of Python objects.  You
 set up your mock object's expected behavior using a domain-specific
 language (DSL), which makes your tests easy to understand and refactor!
 
-== Installing Mox ==
+= Installing Mox =
 
 *TODO* pointer to download/checkout
 
-== Core concepts ==
+= Core concepts =
 
 When you create a mock object, it is in _record mode_.  You record the
 behavior you expect by calling the expected methods on the mock
@@ -33,7 +29,7 @@ After your testing is done (usually along with other assertions)
 you _verify_ that all recorded (expected) interactions
 occurred.
 
-=== Workflow overview ===
+== Workflow overview ==
 
   * Create mock (in record mode)
   * Set up expectations
@@ -41,9 +37,9 @@ occurred.
   * Run test
   * Verify expected interactions with the mock occurred
 
-== Basic Usage ==
+= Basic Usage =
 
-=== General Usage Example ===
+== General Usage Example ==
 
 {{{
 import unittest
@@ -99,14 +95,14 @@ Optionally, you can make your test case be a subclass of
 in `self.mox`, and will automatically verify all mock objects and
 unset stubs at the end of each test.
 
-=== Unexpected Behavior ===
+== Unexpected Behavior ==
 
 Occasionally, snakes on a plane happen: some code uses your mock
 object in a way you weren't expecting it to.  Fortunately for everyone
 involved, Mox will let you know exactly what unexpected event
 happened.
 
-==== Unexpected method call ====
+=== Unexpected method call ===
 
 {{{
   dao = self.person_mocker.CreateMock(PersonDao)
@@ -120,7 +116,7 @@ raises
   Unexpected method call: dao.InsertPerson(other_person).  Expecting: dao.InsertPerson(test_person)
 }}}
 
-==== Unknown method call ====
+=== Unknown method call ===
 {{{
   dao = self.person_mocker.CreateMock(PersonDao)
   dao.InsertPersonZ(test_person).AndReturn(test_primary_key)
@@ -131,7 +127,7 @@ raises
   Method called is not a member of the object: dao.InsertPersonZ(test_person)
 }}}
 
-==== Expected method call (but it didn't happen) ====
+=== Expected method call (but it didn't happen) ===
 {{{
   dao = self.person_mocker.CreateMock(PersonDao)
   dao.InsertPerson(test_person).AndReturn(test_primary_key)
@@ -143,11 +139,11 @@ raises
   Verify: Expected method never called: dao.InsertPerson(test_person)
 }}}
 
-== Advanced Usage ==
+= Advanced Usage =
 
 Believe it or not, there are other features as well!
 
-=== In Any Order ===
+== In Any Order ==
 
 Unfortunately, there are some things that are non-deterministic, such
 as iterating over the keys of a dictionary.  For these cases, you'll
@@ -186,7 +182,7 @@ to one or both of the groups.
 The `Foo` calls can still occur in any order, but they must all occur
 before the unordered `Bar` calls occur.
 
-=== Stub Out ===
+== Stub Out ==
 
 Often, the class you're testing has one method that delegates to a lot
 of other complex methods.  The delegation logic can be complicated, so
@@ -234,7 +230,7 @@ end up in a strange state.  You should either call it before
 executed regardless of whether `Verify()` fails or succeeds.  (If you
 use `mox.MoxTestBase`, this is taken care of for you.)
 
-=== Comparators ===
+== Comparators ==
 
 If you aren't able to pass a argument which is equal (according to
 `__eq__`) to the expected argument when you're recording mock
@@ -294,7 +290,7 @@ behavior, you probably want to use a Comparator.
 
 You can write your own comparators.  It's easy!
 
-=== MockAnything ===
+== MockAnything ==
 
 Some classes do not provide public interfaces; for example, they might
 use `__getattribute__` to dynamically create their interface.  For
@@ -315,7 +311,7 @@ AttributeError: MockMethod has no attribute "AnyMethod". Did you
 remember to put your mocks in replay mode?
 }}}
 
-=== Attributes ===
+== Attributes ==
 
 Some classes automatically create attributes on creation.  If you stub
 out a class, then these attributes will not be created.  You have to
@@ -333,7 +329,7 @@ fake_chart.axis = fake_axis
 
 }}}
 
-=== Mock a module ===
+== Mock a module ==
 
 Because "everything" in Python is an object, you can even mock a
 module.  This could allow you to tests previously untestable code,
@@ -353,7 +349,7 @@ and Quux, you can do:
    foo.bar.Quux().AndReturn(mock_quux)
 }}}
 
-=== Side Effects ===
+== Side Effects ==
 
 Sometimes the behavior of the code you are testing is dependent on
 some side effect of the object you are mocking.  Some examples of when
@@ -380,7 +376,7 @@ is possible to simulate these side effects by using
   assertEquals(['message 0', 'message 1', 'message 2'], messages)
 }}}
 
-=== Misc ===
+== Misc ==
 
 I've seen code that likes to access class variables through instances,
 so I've added support for this.
@@ -409,9 +405,9 @@ example:
 To deal with this, you can make your mock expect `__nonzero__`, so you
 can safely inject your mock into this object.  Hurray!
 
-== Examples ==
+= Examples =
 
-=== Basic Example ===
+== Basic Example ==
 Let's say you have this class, and you'd like to test it:
 
 {{{
@@ -469,7 +465,7 @@ class PersonManagerTest(unittest.TestCase):
 
 Pretty cool, huh?
 
-=== Extending The Basic Example ===
+== Extending The Basic Example ==
 
 Now let's say you want to have your DAO return the new primary key for
 the person, and your manager class would like to verify that the
@@ -520,7 +516,7 @@ And add the new test:
     self.mox.VerifyAll()
 }}}
 
-=== Complicating Things Even More... ===
+== Complicating Things Even More... ==
 
 Ugh, now let's say it is up to your manager to pass some audit trail
 object to the DAO, which the DAO handles appropriately.  Let's not
