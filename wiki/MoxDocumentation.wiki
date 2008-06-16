@@ -1,4 +1,5 @@
 #summary Usage guide for Mox
+#labels Featured
 
 *TODO*: update everything from internal wiki past revision 1.25
 
