@@ -16,7 +16,18 @@ language (DSL), which makes your tests easy to understand and refactor!
 
 = Installing Mox =
 
-*TODO* pointer to download/checkout
+[http://code.google.com/p/pymox/downloads/list?q=label:Featured
+Download the latest version of Mox].  Expand the tarball, and run:
+
+{{{
+$ python setup.py install
+}}}
+
+To run Mox's own tests, rung
+
+{{{
+$ python mox_test.py
+}}}
 
 = Core concepts =
 
