@@ -1,8 +1,6 @@
 #summary Usage guide for Mox
 #labels Featured
 
-*TODO*: update everything from internal wiki past revision 1.25
-
 = Introduction =
 
 Mox is a mock object framework for Python.
