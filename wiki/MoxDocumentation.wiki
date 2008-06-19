@@ -21,7 +21,7 @@ Expand the tarball, and run:
 $ python setup.py install
 }}}
 
-To run Mox's own tests, rung
+To run Mox's own tests, run:
 
 {{{
 $ python mox_test.py
@@ -36,6 +36,8 @@ mock into _replay mode_.  Then you start your actual test code.
 After your testing is done (usually along with other assertions)
 you _verify_ that all recorded (expected) interactions
 occurred.
+
+Mox is strict.  That means that it expects the methods to be called in the order they are recorded, on a per-mock level. This is helpful to ensure that a database connection is not closed before it is used, etc.
 
 == Workflow overview ==
 
@@ -121,7 +123,7 @@ happened.
 }}}
 raises
 {{{
-  Unexpected method call: dao.InsertPerson(other_person).  Expecting: dao.InsertPerson(test_person)
+  Unexpected method call: InsertPerson(other_person) -> None.  Expecting: InsertPerson(test_person) -> test_primary_key
 }}}
 
 === Unknown method call ===
@@ -144,7 +146,8 @@ raises
 }}}
 raises
 {{{
-  Verify: Expected method never called: dao.InsertPerson(test_person)
+Verify: Expected methods never called:
+  0.  InsertPerson(test_person) -> test_primary_key
 }}}
 
 = Advanced Usage =
@@ -157,7 +160,7 @@ Unfortunately, there are some things that are non-deterministic, such
 as iterating over the keys of a dictionary.  For these cases, you'll
 want to group your un-ordered method calls together.  This creates a
 group of method calls that are unordered with respect to each other,
-but ordered with respect to any other expectations.  For example:
+but ordered with respect to other expectations.  For example:
 
 {{{
   dao.OpenConnection()
@@ -180,9 +183,9 @@ to one or both of the groups.
   dao.Foo(1).InAnyOrder('foo').AndReturn('one')
   dao.Foo(2).InAnyOrder('foo').AndReturn('two')
   dao.Foo(3).InAnyOrder('foo').AndReturn('three')
-  dao.Bar('one').InAnyOrder('bar').AndReturn(1)
+  dao.Bar('one').InAnyOrder('foo').AndReturn(1)
   dao.Bar('two').InAnyOrder('bar').AndReturn(2)
-  dao.Bar('three').InAnyOrder('bar').AndReturn(3)
+  dao.Bar('three').InAnyOrder('baz').AndReturn(3)
   dao.CloseConnection()
   mox.Replay(mock)
 }}}
@@ -270,14 +273,14 @@ behavior, you probably want to use a Comparator.
   dao.BulkInsert(ContainsKeyValue(test_id, test_person))
 }}}
 
-  * `Func(callable)` - Validate the paramater with the given callable.  This can be used for more complex checking. The callable must take 1 argument and return a bool.
+  * `Func(callable)` - Validate the parameter with the given callable.  This can be used for more complex checking. The callable must take 1 argument and return a bool.
 {{{
   dao.InsertAuditRecord(Func(IsValidAudit))
 }}}
 
   * `IsAlmost(value [, places])` - Check if the parameter is equal to a given value up to a certain number of decimal places.  Useful for floating point numbers.
 {{{
-  dao.IsAlmost(0.05)
+  dao.AddInterestToAccount(IsAlmost(0.05))
 }}}
 
   * `SameElementsAs(sequence)` - Check if the sequence returned has the same elements as the given sequence.  Useful for lists that may be generated with non-deterministic order.
@@ -312,11 +315,16 @@ m = mox.Mox()
 mock = m.CreateMockAnything()
 mock.AnyMethod()
 }}}
-You may not directly construct a `MockAnything` instance; if you do this,
-your tests will fail with the following error:
+
+You may also create a `MockAnything` instance directly, but then you must call `mox.Replay()` and `mox.Verify()` on it, instead of using the Mox factory methods.
 {{{
-AttributeError: MockMethod has no attribute "AnyMethod". Did you
-remember to put your mocks in replay mode?
+mock = mox.MockAnything()
+mock.AnyMethod()
+mox.Replay(mock)
+
+mock.AnyMethod()
+
+mox.Verify(mock)
 }}}
 
 == Attributes ==
