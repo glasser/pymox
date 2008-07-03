@@ -392,6 +392,20 @@ is possible to simulate these side effects by using
   assertEquals(['message 0', 'message 1', 'message 2'], messages)
 }}}
 
+== Callbacks ==
+
+Mocking a callback should be pretty straight forward.
+{{{
+m = mox.Mox()
+mock_callback = m.CreateMockAnything() # MockAnything is callable
+test_object.SetCallback(mock_callback)
+mock_callback(42) # Expect this to be called.
+
+m.ReplayAll()
+test_object.DoStuff() # Which in turn calls mock_callback...
+m.VerifyAll()
+}}}
+
 == Misc ==
 
 I've seen code that likes to access class variables through instances,
