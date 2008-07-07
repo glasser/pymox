@@ -36,7 +36,7 @@ mox.Verify(mock_greeter)
 
 == Python Mock Module ==
 
-Python Mock Module uses a dictionary to define the expected behavior, and verify methods were called.
+Python Mock Module uses a dictionary to define the expected behavior, and verify methods were called.  Using strings for method names seems very fragile to me.  It would also complicate any auto-magic refactoring you might do.
 
 {{{
 mock_greeter = mock.Mock( {"Get" : "hello" })
@@ -46,7 +46,7 @@ mock.mockCheckCall(self, 0, "Get")
 
 == pMock ==
 
-pMock is extremely verbose, and probably very flexible.
+pMock is extremely verbose, and probably very flexible.  Because it lacks a replay state, any calls to the mock that weren't recorded before hand might silently be recorded as void method calls.
 
 {{{
 mock_greeter = pmock.Mock()
@@ -57,7 +57,7 @@ mock_greeter.verify()
 
 == Mocker ==
 
-Mocker is very similar to Mox, but with Mocker the return value is set on the `mocker` module rather than the mock itself.
+Mocker is very similar to Mox, but with Mocker the return value is set on the `mocker` module rather than the mock itself, which seems awkward to me.
 
 {{{
 mock_greeter = mocker.mock()
@@ -88,7 +88,11 @@ mox.Verify(mock_greeter)
 
 == Python Mock Module ==
 
-Does not seem to support this
+{{{
+mock_greeter = mock.Mock({'"Get", "hello"}, Greeter)
+assertEquals("hello", mock_greeter.Get())
+mock.mockCheckCall(self, 0, "Get")
+}}}
 
 == pMock == 
 
@@ -145,4 +149,46 @@ Like the other libraries, order is not enforced.  Instead of using method names,
 with mocker:order():
   mock_db.OpenConnection()
   mock_db.Query()
+}}}
+
+= Raising exceptions =
+
+Often times you'll want to test that your code not only works properly, but fails elegantly.  In these cases, you would like your mock to return some unexpected value (easy to do), or raise an exception.
+
+== Mox ==
+
+{{{
+mock_greeter.Get().AndRaise(Exception("no greetings left"))
+mox.Replay(mock_greeter)
+assertRaises(Exception, mock_greeter.Get)
+mox.Verify(mock_greeter
+}}}
+
+== Python Mock Module ==
+
+Once again, strings are used for method names, and verification is done by hand.
+
+{{{
+mock_greeter.mockSetExpectation('Get', expectException(Exception))
+assertRaises(Exception, mock_greeter.Get)
+mock.mockCheckCall(self, 0, "Get")
+}}}
+
+== pMock ==
+
+{{{
+mock_greeter.expects(pmock.once()).Get().will(pmock.raise_exception(Exception("no greetings left")))
+assertRaises(Exception, mock_greeter.Get)
+mock_greeter.verify()
+}}}
+
+== Mocker ==
+
+{{{
+mock_greeter.Get()
+mocker.throw(Exception("no greetings left")
+
+mocker.replay()
+assertRaises(Exception, mock_greeter.Get)
+mocker.verify()
 }}}
