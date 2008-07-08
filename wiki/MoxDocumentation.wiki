@@ -334,15 +334,12 @@ out a class, then these attributes will not be created.  You have to
 define these attributes in your `MockObject` on your mock setup.
 
 {{{
-from google3.chartserver.python import chartserver
-
 m = mox.Mox()
 
 fake_axis = m.MockObject(MyAxis)
 
 fake_chart = m.MockObject(MyChart)
 fake_chart.axis = fake_axis
-
 }}}
 
 == Mock a module ==
