@@ -150,6 +150,14 @@ Verify: Expected methods never called:
   0.  InsertPerson(test_person) -> test_primary_key
 }}}
 
+=== Threading issues ===
+
+Mock objects created by Mox are not thread-safe.  If you are replaying mocks in a multi-threaded environment, please guard the mocks via mutex.  
+
+Specifically, the code to validate that the current call matches the recorded call can result in a race condition.
+
+Hopefully soon there will be an option to make the mocks thread safe!
+
 = Advanced Usage =
 
 Believe it or not, there are other features as well!
@@ -294,7 +302,7 @@ behavior, you probably want to use a Comparator.
   dao.UpdateUser(3, IgnoreArg(), 'admin')
 }}}
 
-  * `And()` and `Or()`: combine comparators.  These both take a variable number of comparators.
+  * `And()` and `Or()`: combine comparators.  These both take a variable number of comparators.
 {{{
   dao.BulkInsert(And(In(test_person), IsA(list))
 }}}
@@ -464,7 +472,7 @@ class PersonDao(object):
     self._db = db
 
   def InsertPerson(self, person):
-    db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person
+    db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
 }}}
 
 So now you can write the test:
@@ -518,10 +526,10 @@ example! :) You would change your code as follows:
 
 {{{
   def InsertPerson(self, person):
-    return db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person
+    return db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
 
   def DeletePerson(self, person_id):
-    db.Execute('DELETE FROM Person WHERE ...' % person_id
+    db.Execute('DELETE FROM Person WHERE ...' % person_id)
 }}}
 
 Now you can modify your test:
