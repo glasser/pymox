@@ -1,4 +1,5 @@
 #summary Some useful patterns for using Mox to test code.
+#labels Featured
 
 = Introduction =
 
