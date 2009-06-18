@@ -98,3 +98,27 @@ TODO(damien): Investigate this further. Maybe stubbing out __call__ would help?
 
     self.mox.VerifyAll()
 }}}
+
+== Mocking datetime.datetime.now ==
+
+{{{
+import datetime
+import mox
+
+m = mox.Mox()
+
+# Stub out the datatime.datetime class.
+m.StubOutWithMock(datetime, 'datetime')
+
+# Record a call to 'now', and have it return the value '1234'
+datetime.datetime.now().AndReturn(1234)
+
+# Set the mocks to replay mode
+m.ReplayAll()
+  
+# This will return '1234'
+datetime.datetime.now()
+  
+# Verify the time was actually checked.
+m.VerifyAll()
+}}}
