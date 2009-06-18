@@ -121,4 +121,7 @@ datetime.datetime.now()
   
 # Verify the time was actually checked.
 m.VerifyAll()
+
+# Return datetime.datetime to its default (non-mock) state.
+m.UnsetStubs()
 }}}
