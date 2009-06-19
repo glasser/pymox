@@ -125,3 +125,14 @@ m.VerifyAll()
 # Return datetime.datetime to its default (non-mock) state.
 m.UnsetStubs()
 }}}
+
+Alternatively, rewrite your code so that you can mock out datetime.now without Mox:
+
+{{{
+def FunctionBeingTested(now=datetime.datetime.now):
+  DoSomethingWith(now())
+
+# in test code
+def MyNow(): return 1234
+FunctionBeingTested(now=MyNow)
+}}}
