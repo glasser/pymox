@@ -350,24 +350,23 @@ fake_chart = m.MockObject(MyChart)
 fake_chart.axis = fake_axis
 }}}
 
-== Mock a module ==
+== Mock a class ==
 
-Because "everything" in Python is an object, you can even mock a
-module.  This could allow you to tests previously untestable code,
-such as a module with lots of first order methods.  Just use a
-`MockObject` and it will enforce the public interface of the module.
-The naming can get a little confusing, but the benefits can be pretty
-cool.
+You may have code that doesn't use dependency injection, and just creates objects directly. You may also want to mock those objects.  Thankfully this is possible with Mox.
 
-For example, to stub out the foo.bar module which contains classes Baz
-and Quux, you can do:
+For example, to stub out the foo.bar module which contains the Baz class that your code creates directly:
 
 {{{
-   self.mox.StubOutWithMock(foo, 'bar')
-   mock_baz = self.mox.CreateMockAnything()
-   mock_quux = self.mox.CreateMockAnything()
+   # Create a mock instance of the Baz class.  This must be done first
+   # or else the Mock will be created from the Stub (created in the next step).
+   mock_baz = self.mox.CreateMock(Baz)
+
+   # Stub out the bar module, so we can control it, and force it to 
+   # act like a factory for our mocks.
+   self.mox.StubOutWithMock(foo, 'bar', use_mock_anything=True)
+
+   # Record that the creation of Baz should return a the mock baz.
    foo.bar.Baz().AndReturn(mock_baz)
-   foo.bar.Quux().AndReturn(mock_quux)
 }}}
 
 == Side Effects ==
