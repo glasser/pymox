@@ -1030,6 +1030,20 @@ class MockObjectTest(unittest.TestCase):
     self.assertEquals(['a', 'b'], [x for x in dummy])
     dummy._Verify()
 
+  def testInstantiationWithAdditionalAttributes(self):
+    mock_object = mox.MockObject(TestClass, attrs={"attr1": "value"})
+    self.assertEquals(mock_object.attr1, "value")
+
+  def testCantOverrideMethodsWithAttributes(self):
+    self.assertRaises(ValueError, mox.MockObject, TestClass,
+                      attrs={"ValidCall": "value"})
+
+  def testCantMockNonPublicAttributes(self):
+    self.assertRaises(mox.PrivateAttributeError, mox.MockObject, TestClass,
+                      attrs={"_protected": "value"})
+    self.assertRaises(mox.PrivateAttributeError, mox.MockObject, TestClass,
+                      attrs={"__private": "value"})
+
 
 class MoxTest(unittest.TestCase):
   """Verify Mox works correctly."""
