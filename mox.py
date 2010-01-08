@@ -156,6 +156,19 @@ class UnknownMethodCallError(Error):
       self._unknown_method_name
 
 
+class PrivateAttributeError(Error):
+  """
+  Raised if a MockObject is passed a private additional attribute name.
+  """
+
+  def __init__(self, attr):
+    Error.__init__(self)
+    self._attr = attr
+
+  def __str__(self):
+    return ("Attribute '%s' is private and should not be available in a mock "
+            "object." % attr)
+
 class Mox(object):
   """Mox: a factory for creating mock objects."""
 
@@ -170,18 +183,19 @@ class Mox(object):
     self._mock_objects = []
     self.stubs = stubout.StubOutForTesting()
 
-  def CreateMock(self, class_to_mock):
+  def CreateMock(self, class_to_mock, attrs={}):
     """Create a new mock object.
 
     Args:
       # class_to_mock: the class to be mocked
       class_to_mock: class
+      attrs: dict of attribute names to values that will be set on the mock
+        object.  Only public attributes may be set.
 
     Returns:
       MockObject that can be used as the class_to_mock would be.
     """
-
-    new_mock = MockObject(class_to_mock)
+    new_mock = MockObject(class_to_mock, attrs=attrs)
     self._mock_objects.append(new_mock)
     return new_mock
 
@@ -392,7 +406,7 @@ class MockAnything:
 class MockObject(MockAnything, object):
   """A mock object that simulates the public/protected interface of a class."""
 
-  def __init__(self, class_to_mock):
+  def __init__(self, class_to_mock, attrs={}):
     """Initialize a mock object.
 
     This determines the methods and properties of the class and stores them.
@@ -400,6 +414,12 @@ class MockObject(MockAnything, object):
     Args:
       # class_to_mock: class to be mocked
       class_to_mock: class
+      attrs: dict of attribute names to values that will be set on the mock
+        object.  Only public attributes may be set.
+
+    Raises:
+      PrivateAttributeError: if a supplied attribute is not public.
+      ValueError: if an attribute would mask an existing method.
     """
 
     # This is used to hack around the mixin/inheritance of MockAnything, which
@@ -415,6 +435,18 @@ class MockObject(MockAnything, object):
         self._known_methods.add(method)
       else:
         self._known_vars.add(method)
+
+    # Set additional attributes at instantiation time; this is quicker
+    # than manually setting attributes that are normally created in
+    # __init__.
+    for attr, value in attrs.items():
+      if attr.startswith("_"):
+        raise PrivateAttributeError(attr)
+      elif attr in self._known_methods:
+        raise ValueError("'%s' is a method of '%s' objects." % (attr,
+                                                                class_to_mock))
+      else:
+        setattr(self, attr, value)
 
   def __getattr__(self, name):
     """Intercept attribute request on this object.
