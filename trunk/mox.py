@@ -430,6 +430,16 @@ class MockObject(MockAnything, object):
     self._known_methods = set()
     self._known_vars = set()
     self._class_to_mock = class_to_mock
+    try:
+      self._description = class_to_mock.__name__
+      # If class_to_mock is a mock itself, then we'll get an UnknownMethodCall
+      # error here from the underlying call to __getattr__('__name__')
+    except (UnknownMethodCallError, AttributeError):
+      try:
+        self._description = type(class_to_mock).__name__
+      except AttributeError:
+        pass
+
     for method in dir(class_to_mock):
       if callable(getattr(class_to_mock, method)):
         self._known_methods.add(method)
@@ -761,6 +771,7 @@ class MockMethod(object):
     """
 
     self._name = method_name
+    self.__name__ = method_name
     self._call_queue = call_queue
     if not isinstance(call_queue, deque):
       self._call_queue = deque(self._call_queue)
@@ -803,7 +814,9 @@ class MockMethod(object):
     expected_method = self._VerifyMethodCall()
 
     if expected_method._side_effects:
-      expected_method._side_effects(*params, **named_params)
+      result = expected_method._side_effects(*params, **named_params)
+      if expected_method._return_value is None:
+        expected_method._return_value = result
 
     if expected_method._exception:
       raise expected_method._exception
@@ -1286,6 +1299,37 @@ class ContainsKeyValue(Comparator):
     return '<map containing the entry \'%s: %s\'>' % (self._key, self._value)
 
 
+class ContainsAttributeValue(Comparator):
+  """Checks whether a passed parameter contains attributes with a given value.
+
+  Example:
+  mock_dao.UpdateSomething(ContainsAttribute('stevepm', stevepm_user_info))
+  """
+
+  def __init__(self, key, value):
+    """Initialize.
+
+    Args:
+      # key: an attribute name of an object
+      # value: the corresponding value
+    """
+
+    self._key = key
+    self._value = value
+
+  def equals(self, rhs):
+    """Check whether the given attribute has a matching value in the rhs object.
+
+    Returns:
+      bool
+    """
+
+    try:
+      return getattr(rhs, self._key) == self._value
+    except Exception:
+      return False
+
+
 class SameElementsAs(Comparator):
   """Checks whether iterables contain the same elements (ignoring order).
 
@@ -1621,7 +1665,8 @@ class MoxMetaTestBase(type):
     # for a case when test class is not the immediate child of MoxTestBase
     for base in bases:
       for attr_name in dir(base):
-        d[attr_name] = getattr(base, attr_name)
+        if attr_name not in d:
+          d[attr_name] = getattr(base, attr_name)
 
     for func_name, func in d.items():
       if func_name.startswith('test') and callable(func):
@@ -1643,14 +1688,21 @@ class MoxMetaTestBase(type):
     """
     def new_method(self, *args, **kwargs):
       mox_obj = getattr(self, 'mox', None)
+      stubout_obj = getattr(self, 'stubs', None)
       cleanup_mox = False
+      cleanup_stubout = False
       if mox_obj and isinstance(mox_obj, Mox):
         cleanup_mox = True
+      if stubout_obj and isinstance(stubout_obj, stubout.StubOutForTesting):
+        cleanup_stubout = True
       try:
         func(self, *args, **kwargs)
       finally:
         if cleanup_mox:
           mox_obj.UnsetStubs()
+        if cleanup_stubout:
+          stubout_obj.UnsetAll()
+          stubout_obj.SmartUnsetAll()
       if cleanup_mox:
         mox_obj.VerifyAll()
     new_method.__name__ = func.__name__
@@ -1662,9 +1714,10 @@ class MoxMetaTestBase(type):
 class MoxTestBase(unittest.TestCase):
   """Convenience test class to make stubbing easier.
 
-  Sets up a "mox" attribute which is an instance of Mox - any mox tests will
-  want this. Also automatically unsets any stubs and verifies that all mock
-  methods have been called at the end of each test, eliminating boilerplate
+  Sets up a "mox" attribute which is an instance of Mox (any mox tests will
+  want this), and a "stubs" attribute that is an instance of StubOutForTesting
+  (needed at times). Also automatically unsets any stubs and verifies that all
+  mock methods have been called at the end of each test, eliminating boilerplate
   code.
   """
 
@@ -1673,3 +1726,4 @@ class MoxTestBase(unittest.TestCase):
   def setUp(self):
     super(MoxTestBase, self).setUp()
     self.mox = Mox()
+    self.stubs = stubout.StubOutForTesting()
