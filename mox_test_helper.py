@@ -74,3 +74,22 @@ class ExampleMoxTest(mox.MoxTestBase, ExampleMoxTestMixin):
     os.stat(self.DIR_PATH)
     self.mox.ReplayAll()
     os.stat(self.DIR_PATH)
+
+  def testHasStubs(self):
+    listdir_list = []
+
+    def MockListdir(directory):
+      listdir_list.append(directory)
+
+    self.stubs.Set(os, 'listdir', MockListdir)
+    os.listdir(self.DIR_PATH)
+    self.assertEqual([self.DIR_PATH], listdir_list)
+
+
+class TestClassFromAnotherModule(object):
+
+  def __init__():
+    return None
+
+  def Value():
+    return "Not mock"
