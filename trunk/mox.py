@@ -441,9 +441,11 @@ class MockObject(MockAnything, object):
         pass
 
     for method in dir(class_to_mock):
-      if callable(getattr(class_to_mock, method)):
+      attr = getattr(class_to_mock, method)
+      if callable(attr):
         self._known_methods.add(method)
-      else:
+      elif not (type(attr) is property):
+        # treating properties as class vars makes little sense.
         self._known_vars.add(method)
 
     # Set additional attributes at instantiation time; this is quicker
