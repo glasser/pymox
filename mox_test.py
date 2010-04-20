@@ -1759,6 +1759,12 @@ class MoxTestBaseMultipleInheritanceTest(mox.MoxTestBase, MyTestCase):
     super(MoxTestBaseMultipleInheritanceTest, self).testMethodOverride()
     self.assertEquals(43, self.another_critical_variable)
 
+class MoxTestDontMockProperties(MoxTestBaseTest):
+    def testPropertiesArentMocked(self):
+        mock_class = self.mox.CreateMock(ClassWithProperties)
+        self.assertRaises(mox.UnknownMethodCallError, lambda:
+                mock_class.prop_attr)
+
 
 class TestClass:
   """This class is used only for testing the mock framework"""
@@ -1819,6 +1825,7 @@ class TestClass:
   def __iter__(self):
     pass
 
+
 class ChildClass(TestClass):
   """This inherits from TestClass."""
   def __init__(self):
@@ -1836,6 +1843,15 @@ class CallableClass(object):
 
   def __call__(self, param):
     return param
+
+class ClassWithProperties(object):
+    def setter_attr(self, value):
+        pass
+
+    def getter_attr(self):
+        pass
+
+    prop_attr = property(getter_attr, setter_attr)
 
 
 class SubscribtableNonIterableClass(object):
