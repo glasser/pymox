@@ -1176,6 +1176,11 @@ class MoxTest(unittest.TestCase):
 
     self.assertRaises(mox.UnexpectedMethodCallError, mock_obj, "ZOOBAZ")
 
+  def testCallableObjectVerifiesSignature(self):
+    mock_obj = self.mox.CreateMock(CallableClass)
+    # Too many arguments
+    self.assertRaises(AttributeError, mock_obj, "foo", "bar")
+
   def testUnorderedGroup(self):
     """Test that using one unordered group works."""
     mock_obj = self.mox.CreateMockAnything()
@@ -1507,6 +1512,13 @@ class MoxTest(unittest.TestCase):
     self.assertRaises(TypeError, self.mox.StubOutWithMock, TestClass,
                       'MyStaticMethod')
 
+  def testStubOutFirstClassMethodVerifiesSignature(self):
+    self.mox.StubOutWithMock(mox_test_helper, 'MyTestFunction')
+
+    # Wrong number of arguments
+    self.assertRaises(AttributeError, mox_test_helper.MyTestFunction, 1)
+    self.mox.UnsetStubs()
+
   def testStubOutObject(self):
     """Test than object is replaced with a Mock."""
 
@@ -1782,6 +1794,9 @@ class TestClass:
     return not self.__eq__(rhs)
 
   def ValidCall(self):
+    pass
+
+  def MethodWithArgs(self, one, two, nine=None):
     pass
 
   def OtherValidCall(self):
