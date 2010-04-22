@@ -93,3 +93,6 @@ class TestClassFromAnotherModule(object):
 
   def Value():
     return "Not mock"
+
+def MyTestFunction(one, two, nine=None):
+  pass

@@ -174,8 +174,8 @@ class Mox(object):
 
   # A list of types that should be stubbed out with MockObjects (as
   # opposed to MockAnythings).
-  _USE_MOCK_OBJECT = [types.ClassType, types.InstanceType, types.ModuleType,
-                      types.ObjectType, types.TypeType]
+  _USE_MOCK_OBJECT = [types.ClassType, types.FunctionType, types.InstanceType,
+                      types.ModuleType, types.ObjectType, types.TypeType]
 
   def __init__(self):
     """Initialize a new Mox."""
@@ -246,13 +246,13 @@ class Mox(object):
     """
 
     attr_to_replace = getattr(obj, attr_name)
+    attr_type = type(attr_to_replace)
 
-    # Check for a MockAnything. This could cause confusing problems later on.
-    if attr_to_replace == MockAnything():
+    if attr_type == MockAnything or attr_type == MockObject:
       raise TypeError('Cannot mock a MockAnything! Did you remember to '
                       'call UnsetStubs in your previous test?')
 
-    if type(attr_to_replace) in self._USE_MOCK_OBJECT and not use_mock_anything:
+    if attr_type in self._USE_MOCK_OBJECT and not use_mock_anything:
       stub = self.CreateMock(attr_to_replace)
     else:
       stub = self.CreateMockAnything(description='Stub for %s' % attr_to_replace)
@@ -640,7 +640,16 @@ class MockObject(MockAnything, object):
 
     # Because the call is happening directly on this object instead of a method,
     # the call on the mock method is made right here
-    mock_method = self._CreateMockMethod('__call__')
+
+    # If we are mocking a Function, then use the function, and not the
+    # __call__ method
+    method = None
+    if type(self._class_to_mock) == types.FunctionType:
+      method = self._class_to_mock;
+    else:
+      method = getattr(self._class_to_mock, '__call__')
+    mock_method = self._CreateMockMethod('__call__', method_to_mock=method)
+
     return mock_method(*params, **named_params)
 
   @property
