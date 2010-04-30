@@ -1486,7 +1486,7 @@ class MoxTest(unittest.TestCase):
     self.assertEquals('foo', actual)
     self.failIf(isinstance(test_obj.OtherValidCall, mox.MockAnything))
 
-  def testStubOutClass(self):
+  def testStubOutClass_OldStyle(self):
     """Test a mocked class whose __init__ returns a Mock."""
     self.mox.StubOutWithMock(mox_test_helper, 'TestClassFromAnotherModule')
     self.assert_(isinstance(mox_test_helper.TestClassFromAnotherModule,
@@ -1505,6 +1505,82 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
     self.assertEquals('mock instance', actual)
+
+  def testStubOutClass(self):
+    self.mox.StubOutClassWithMocks(mox_test_helper, 'CallableClass')
+
+    # Instance one
+    mock_one = mox_test_helper.CallableClass(1, 2)
+    mock_one.Value().AndReturn('mock')
+
+    # Instance two
+    mock_two = mox_test_helper.CallableClass(8, 9)
+    mock_two('one').AndReturn('called mock')
+
+    self.mox.ReplayAll()
+
+    one = mox_test_helper.CallableClass(1, 2)
+    actual_one = one.Value()
+
+    two = mox_test_helper.CallableClass(8, 9)
+    actual_two = two('one')
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+    # Verify the correct mocks were returned
+    self.assertEquals(mock_one, one)
+    self.assertEquals(mock_two, two)
+
+    # Verify
+    self.assertEquals('mock', actual_one)
+    self.assertEquals('called mock', actual_two)
+
+  def testStubOutClass_NotAClass(self):
+    self.assertRaises(TypeError, self.mox.StubOutClassWithMocks,
+                      mox_test_helper, 'MyTestFunction')
+
+  def testStubOutClassNotEnoughCreated(self):
+    self.mox.StubOutClassWithMocks(mox_test_helper, 'CallableClass')
+
+    mox_test_helper.CallableClass(1, 2)
+    mox_test_helper.CallableClass(8, 9)
+
+    self.mox.ReplayAll()
+    mox_test_helper.CallableClass(1, 2)
+
+    self.assertRaises(mox.ExpectedMockCreationError, self.mox.VerifyAll)
+    self.mox.UnsetStubs()
+
+  def testStubOutClassWrongSignature(self):
+    self.mox.StubOutClassWithMocks(mox_test_helper, 'CallableClass')
+
+    self.assertRaises(AttributeError, mox_test_helper.CallableClass)
+
+    self.mox.UnsetStubs()
+
+  def testStubOutClassWrongParameters(self):
+    self.mox.StubOutClassWithMocks(mox_test_helper, 'CallableClass')
+
+    mox_test_helper.CallableClass(1, 2)
+
+    self.mox.ReplayAll()
+
+    self.assertRaises(mox.UnexpectedMethodCallError,
+                      mox_test_helper.CallableClass, 8, 9)
+    self.mox.UnsetStubs()
+
+  def testStubOutClassTooManyCreated(self):
+    self.mox.StubOutClassWithMocks(mox_test_helper, 'CallableClass')
+
+    mox_test_helper.CallableClass(1, 2)
+
+    self.mox.ReplayAll()
+    mox_test_helper.CallableClass(1, 2)
+    self.assertRaises(mox.UnexpectedMockCreationError,
+                      mox_test_helper.CallableClass, 8, 9)
+
+    self.mox.UnsetStubs()
 
   def testWarnsUserIfMockingMock(self):
     """Test that user is warned if they try to stub out a MockAnything."""

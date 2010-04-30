@@ -88,11 +88,24 @@ class ExampleMoxTest(mox.MoxTestBase, ExampleMoxTestMixin):
 
 class TestClassFromAnotherModule(object):
 
-  def __init__():
+  def __init__(self):
     return None
 
+  def Value(self):
+    return 'Not mock'
+
+
+class CallableClass(object):
+
+  def __init__(self, one, two, nine=None):
+    pass
+
+  def __call__(self, one):
+    return 'Not mock'
+
   def Value():
-    return "Not mock"
+    return 'Not mock'
+
 
 def MyTestFunction(one, two, nine=None):
   pass
