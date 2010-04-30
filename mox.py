@@ -169,6 +169,61 @@ class PrivateAttributeError(Error):
     return ("Attribute '%s' is private and should not be available in a mock "
             "object." % attr)
 
+
+class ExpectedMockCreationError(Error):
+  """Raised if mocks should have been created by StubOutClassWithMocks."""
+
+  def __init__(self, expected_mocks):
+    """Init exception.
+
+    Args:
+      # expected_mocks: A sequence of MockObjects that should have been
+      #   created
+
+    Raises:
+      ValueError: if expected_mocks contains no methods.
+    """
+
+    if not expected_mocks:
+      raise ValueError("There must be at least one expected method")
+    Error.__init__(self)
+    self._expected_mocks = expected_mocks
+
+  def __str__(self):
+    mocks = "\n".join(["%3d.  %s" % (i, m)
+                       for i, m in enumerate(self._expected_mocks)])
+    return "Verify: Expected mocks never created:\n%s" % (mocks,)
+
+
+class UnexpectedMockCreationError(Error):
+  """Raised if too many mocks were created by StubOutClassWithMocks."""
+
+  def __init__(self, instance, *params, **named_params):
+    """Init exception.
+
+    Args:
+      # instance: the type of obejct that was created
+      # params: parameters given during instantiation
+      # named_params: named parameters given during instantiation
+    """
+
+    Error.__init__(self)
+    self._instance = instance
+    self._params = params
+    self._named_params = named_params
+
+  def __str__(self):
+    args = ", ".join(["%s" % v for i, v in enumerate(self._params)])
+    error = "Unexpected mock creation: %s(%s" % (self._instance, args)
+
+    if self._named_params:
+      error += ", " + ", ".join(["%s=%s" % (k, v) for k, v in
+                                 self._named_params.iteritems()])
+
+    error += ")"
+    return error
+
+
 class Mox(object):
   """Mox: a factory for creating mock objects."""
 
@@ -176,6 +231,9 @@ class Mox(object):
   # opposed to MockAnythings).
   _USE_MOCK_OBJECT = [types.ClassType, types.FunctionType, types.InstanceType,
                       types.ModuleType, types.ObjectType, types.TypeType]
+
+  # A list of types that may be stubbed out with a MockObjectFactory.
+  _USE_MOCK_FACTORY = [types.ClassType, types.ObjectType, types.TypeType]
 
   def __init__(self):
     """Initialize a new Mox."""
@@ -258,6 +316,58 @@ class Mox(object):
       stub = self.CreateMockAnything(description='Stub for %s' % attr_to_replace)
 
     self.stubs.Set(obj, attr_name, stub)
+
+  def StubOutClassWithMocks(self, obj, attr_name):
+    """Replace a class with a "mock factory" that will create mock objects.
+
+    This is useful if the code-under-test directly instantiates
+    dependencies.  Previously some boilder plate was necessary to
+    create a mock that would act as a factory.  Using
+    StubOutClassWithMocks, once you've stubbed out the class you may
+    use the stubbed class as you would any other mock created by mox:
+    during the record phase, new mock instances will be created, and
+    during replay, the recorded mocks will be returned.
+
+    In replay mode
+
+    # Example using StubOutWithMock (the old, clunky way):
+
+    mock1 = mox.CreateMock(my_import.FooClass)
+    mock2 = mox.CreateMock(my_import.FooClass)
+    foo_factory = mox.StubOutWithMock(my_import, 'FooClass',
+                                      use_mock_anything=True)
+    foo_factory(1, 2).AndReturn(mock1)
+    foo_factory(9, 10).AndReturn(mock2)
+    mox.ReplayAll()
+
+    my_import.FooClass(1, 2)   # Returns mock1 again.
+    my_import.FooClass(9, 10)  # Returns mock2 again.
+    mox.VerifyAll()
+
+    # Example using StubOutClassWithMocks:
+
+    mox.StubOutClassWithMocks(my_import, 'FooClass')
+    mock1 = my_import.FooClass(1, 2)   # Returns a new mock of FooClass
+    mock2 = my_import.FooClass(9, 10)  # Returns another mock instance
+    mox.ReplayAll()
+
+    my_import.FooClass(1, 2)   # Returns mock1 again.
+    my_import.FooClass(9, 10)  # Returns mock2 again.
+    mox.VerifyAll()
+    """
+    attr_to_replace = getattr(obj, attr_name)
+    attr_type = type(attr_to_replace)
+
+    if attr_type == MockAnything or attr_type == MockObject:
+      raise TypeError('Cannot mock a MockAnything! Did you remember to '
+                      'call UnsetStubs in your previous test?')
+
+    if attr_type not in self._USE_MOCK_FACTORY:
+      raise TypeError('Given attr is not a Class.  Use StubOutWithMock.')
+
+    factory = _MockObjectFactory(attr_to_replace, self)
+    self._mock_objects.append(factory)
+    self.stubs.Set(obj, attr_name, factory)
 
   def UnsetStubs(self):
     """Restore stubs to their original state."""
@@ -657,6 +767,54 @@ class MockObject(MockAnything, object):
     """Return the class that is being mocked."""
 
     return self._class_to_mock
+
+
+class _MockObjectFactory(MockObject):
+  """A MockObjectFactory creates mocks and verifies __init__ params.
+
+  A MockObjectFactory removes the boiler plate code that was previously
+  necessary to stub out direction instantiation of a class.
+
+  The MockObjectFactory creates new MockObjects when called and verifies the
+  __init__ params are correct when in record mode.  When replaying, existing
+  mocks are returned, and the __init__ params are verified.
+
+  See StubOutWithMock vs StubOutClassWithMocks for more detail.
+  """
+
+  def __init__(self, class_to_mock, mox_instance):
+    MockObject.__init__(self, class_to_mock)
+    self._mox = mox_instance
+    self._instance_queue = deque()
+
+  def __call__(self, *params, **named_params):
+    """Instantiate and record that a new mock has been created."""
+
+    method = getattr(self._class_to_mock, '__init__')
+    mock_method = self._CreateMockMethod('__init__', method_to_mock=method)
+    # Note: calling mock_method() is deferred in order to catch the
+    # empty instance_queue first.
+
+    if self._replay_mode:
+      if not self._instance_queue:
+        raise UnexpectedMockCreationError(self._class_to_mock, *params,
+                                          **named_params)
+
+      mock_method(*params, **named_params)
+
+      return self._instance_queue.pop()
+    else:
+      mock_method(*params, **named_params)
+
+      instance = self._mox.CreateMock(self._class_to_mock)
+      self._instance_queue.appendleft(instance)
+      return instance
+
+  def _Verify(self):
+    """Verify that all mocks have been created."""
+    if self._instance_queue:
+      raise ExpectedMockCreationError(self._instance_queue)
+    super(_MockObjectFactory, self)._Verify()
 
 
 class MethodCallChecker(object):
