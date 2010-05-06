@@ -161,7 +161,7 @@ Often times you'll want to test that your code not only works properly, but fail
 mock_greeter.Get().AndRaise(Exception("no greetings left"))
 mox.Replay(mock_greeter)
 assertRaises(Exception, mock_greeter.Get)
-mox.Verify(mock_greeter
+mox.Verify(mock_greeter)
 }}}
 
 == Python Mock Module ==
