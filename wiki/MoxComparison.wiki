@@ -89,7 +89,7 @@ mox.Verify(mock_greeter)
 == Python Mock Module ==
 
 {{{
-mock_greeter = mock.Mock({'"Get", "hello"}, Greeter)
+mock_greeter = mock.Mock({"Get", "hello"}, Greeter)
 assertEquals("hello", mock_greeter.Get())
 mock.mockCheckCall(self, 0, "Get")
 }}}
