@@ -423,9 +423,6 @@ class MockAnything:
     self._description = description
     self._Reset()
 
-  def __str__(self):
-    return "<MockAnything instance at %s>" % id(self)
-
   def __repr__(self):
     return '<MockAnything instance>'
 
