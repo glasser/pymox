@@ -490,6 +490,13 @@ class MockAnythingTest(unittest.TestCase):
     """Calling repr on a MockAnything instance must work."""
     self.assertEqual('<MockAnything instance>', repr(self.mock_object))
 
+  def testCanMockStr(self):
+    self.mock_object.__str__().AndReturn("foo");
+    self.mock_object._Replay()
+    actual = str(self.mock_object)
+    self.mock_object._Verify();
+    self.assertEquals("foo", actual)
+
   def testSetupMode(self):
     """Verify the mock will accept any call."""
     self.mock_object.NonsenseCall()
