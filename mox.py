@@ -908,7 +908,7 @@ class MethodCallChecker(object):
     still_needed = [k for k, v in arg_status.iteritems()
                     if v == MethodCallChecker._NEEDED]
     if still_needed:
-      raise AttributeError('No values given for arguments %s'
+      raise AttributeError('No values given for arguments: %s'
                            % (' '.join(sorted(still_needed))))
 
 
