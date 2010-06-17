@@ -1478,11 +1478,14 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
 
   def testStubOutMethod(self):
-    """Test that a method is replaced with a MockAnything."""
+    """Test that a method is replaced with a MockObject."""
     test_obj = TestClass()
+    method_type = type(test_obj.OtherValidCall)
     # Replace OtherValidCall with a mock.
     self.mox.StubOutWithMock(test_obj, 'OtherValidCall')
-    self.assert_(isinstance(test_obj.OtherValidCall, mox.MockAnything))
+    self.assertTrue(isinstance(test_obj.OtherValidCall, mox.MockObject))
+    self.assertFalse(type(test_obj.OtherValidCall) is method_type)
+
     test_obj.OtherValidCall().AndReturn('foo')
     self.mox.ReplayAll()
 
@@ -1491,7 +1494,7 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
-    self.failIf(isinstance(test_obj.OtherValidCall, mox.MockAnything))
+    self.assertTrue(type(test_obj.OtherValidCall) is method_type)
 
   def testStubOutClass_OldStyle(self):
     """Test a mocked class whose __init__ returns a Mock."""
@@ -1601,6 +1604,30 @@ class MoxTest(unittest.TestCase):
     # Wrong number of arguments
     self.assertRaises(AttributeError, mox_test_helper.MyTestFunction, 1)
     self.mox.UnsetStubs()
+
+  def _testMethodSignatureVerification(self, stubClass):
+    # If stubClass is true, the test is run against an a stubbed out class,
+    # else the test is run against a stubbed out instance.
+    if stubClass:
+      self.mox.StubOutWithMock(mox_test_helper.ExampleClass, "TestMethod")
+      obj = mox_test_helper.ExampleClass()
+    else:
+      obj = mox_test_helper.ExampleClass()
+      self.mox.StubOutWithMock(mox_test_helper.ExampleClass, "TestMethod")
+    self.assertRaises(AttributeError, obj.TestMethod)
+    self.assertRaises(AttributeError, obj.TestMethod, 1)
+    self.assertRaises(AttributeError, obj.TestMethod, nine=2)
+    obj.TestMethod(1, 2)
+    obj.TestMethod(1, 2, 3)
+    obj.TestMethod(1, 2, nine=3)
+    self.assertRaises(AttributeError, obj.TestMethod, 1, 2, 3, 4)
+    self.mox.UnsetStubs()
+
+  def testStubOutClassMethodVerifiesSignature(self):
+    self._testMethodSignatureVerification(stubClass=True)
+
+  def testStubOutObjectMethodVerifiesSignature(self):
+    self._testMethodSignatureVerification(stubClass=False)
 
   def testStubOutObject(self):
     """Test than object is replaced with a Mock."""

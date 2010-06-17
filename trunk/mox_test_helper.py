@@ -109,3 +109,7 @@ class CallableClass(object):
 
 def MyTestFunction(one, two, nine=None):
   pass
+
+class ExampleClass(object):
+  def TestMethod(self, one, two, nine=None):
+    pass

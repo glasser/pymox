@@ -230,7 +230,9 @@ class Mox(object):
   # A list of types that should be stubbed out with MockObjects (as
   # opposed to MockAnythings).
   _USE_MOCK_OBJECT = [types.ClassType, types.FunctionType, types.InstanceType,
-                      types.ModuleType, types.ObjectType, types.TypeType]
+                      types.ModuleType, types.ObjectType, types.TypeType,
+                      types.MethodType, types.UnboundMethodType,
+                      ]
 
   # A list of types that may be stubbed out with a MockObjectFactory.
   _USE_MOCK_FACTORY = [types.ClassType, types.ObjectType, types.TypeType]
@@ -754,7 +756,7 @@ class MockObject(MockAnything, object):
     # If we are mocking a Function, then use the function, and not the
     # __call__ method
     method = None
-    if type(self._class_to_mock) == types.FunctionType:
+    if type(self._class_to_mock) in (types.FunctionType, types.MethodType):
       method = self._class_to_mock;
     else:
       method = getattr(self._class_to_mock, '__call__')
