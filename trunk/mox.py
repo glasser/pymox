@@ -1237,6 +1237,13 @@ class Comparator:
   def __ne__(self, rhs):
     return not self.equals(rhs)
 
+class Is(Comparator):
+  def __init__(self, obj):
+    self._obj = obj
+  def equals(self, rhs):
+    return rhs is self._obj
+  def __repr__(self):
+    return "<is %r (%s)>" % (self._obj, id(self._obj))
 
 class IsA(Comparator):
   """This class wraps a basic Python type or class.  It is used to verify
