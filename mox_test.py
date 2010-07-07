@@ -1496,6 +1496,59 @@ class MoxTest(unittest.TestCase):
     self.assertEquals('foo', actual)
     self.assertTrue(type(test_obj.OtherValidCall) is method_type)
 
+  def testStubOutMethod_CalledAsUnboundMethod_Comparator(self):
+    instance = TestClass()
+    self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
+
+    TestClass.OtherValidCall(mox.IgnoreArg()).AndReturn('foo')
+    self.mox.ReplayAll()
+
+    actual = TestClass.OtherValidCall(instance)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+    self.assertEquals('foo', actual)
+
+  def testStubOutMethod_CalledAsUnboundMethod_ActualInstance(self):
+    instance = TestClass()
+    self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
+
+    TestClass.OtherValidCall(instance).AndReturn('foo')
+    self.mox.ReplayAll()
+
+    actual = TestClass.OtherValidCall(instance)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+    self.assertEquals('foo', actual)
+
+  def testStubOutMethod_CalledAsUnboundMethod_DifferentInstance(self):
+    instance = TestClass()
+    self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
+
+    TestClass.OtherValidCall(instance).AndReturn('foo')
+    self.mox.ReplayAll()
+
+    # This should fail, since the instances are different
+    self.assertRaises(mox.UnexpectedMethodCallError,
+                      TestClass.OtherValidCall, "wrong self")
+
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_CalledAsBoundMethod(self):
+    t = self.mox.CreateMock(TestClass)
+
+    t.MethodWithArgs(mox.IgnoreArg(), mox.IgnoreArg()).AndReturn('foo')
+    self.mox.ReplayAll()
+
+    actual = t.MethodWithArgs(None, None);
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+    self.assertEquals('foo', actual)
+
   def testStubOutClass_OldStyle(self):
     """Test a mocked class whose __init__ returns a Mock."""
     self.mox.StubOutWithMock(mox_test_helper, 'TestClassFromAnotherModule')

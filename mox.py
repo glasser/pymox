@@ -819,7 +819,7 @@ class _MockObjectFactory(MockObject):
     super(_MockObjectFactory, self)._Verify()
 
 
-class MethodCallChecker(object):
+class MethodSignatureChecker(object):
   """Ensures that methods are called correctly."""
 
   _NEEDED, _DEFAULT, _GIVEN = range(3)
@@ -843,6 +843,7 @@ class MethodCallChecker(object):
     if inspect.ismethod(method):
       self._args = self._args[1:]  # Skip 'self'.
     self._method = method
+    self._instance = None  # May contain the instance this is bound to.
 
     self._has_varargs = varargs is not None
     self._has_varkw = varkw is not None
@@ -865,9 +866,9 @@ class MethodCallChecker(object):
     Raises:
       AttributeError: arg_name is already marked as _GIVEN.
     """
-    if arg_status.get(arg_name, None) == MethodCallChecker._GIVEN:
+    if arg_status.get(arg_name, None) == MethodSignatureChecker._GIVEN:
       raise AttributeError('%s provided more than once' % (arg_name,))
-    arg_status[arg_name] = MethodCallChecker._GIVEN
+    arg_status[arg_name] = MethodSignatureChecker._GIVEN
 
   def Check(self, params, named_params):
     """Ensures that the parameters used while recording a call are valid.
@@ -881,10 +882,26 @@ class MethodCallChecker(object):
     Raises:
       AttributeError: the given parameters don't work with the given method.
     """
-    arg_status = dict((a, MethodCallChecker._NEEDED)
+    arg_status = dict((a, MethodSignatureChecker._NEEDED)
                       for a in self._required_args)
     for arg in self._default_args:
-      arg_status[arg] = MethodCallChecker._DEFAULT
+      arg_status[arg] = MethodSignatureChecker._DEFAULT
+
+    # WARNING: Suspect hack ahead.
+    #
+    # Check to see if this is an unbound method, where the instance
+    # should be bound as the first argument.  We try to determine if
+    # the first argument (param[0]) is an instance of the class, or it
+    # is equivalent to the class (used to account for Comparators).
+    #
+    # NOTE: If a Func() comparator is used, and the signature is not
+    # correct, this will cause extra executions of the function.
+    if inspect.ismethod(self._method):
+      # The extra param accounts for the bound instance.
+      if len(params) == len(self._args) + 1:
+        clazz = getattr(self._method, 'im_class', None)
+        if isinstance(params[0], clazz) or params[0] == clazz:
+          params = params[1:]
 
     # Check that each positional param is valid.
     for i in range(len(params)):
@@ -906,7 +923,7 @@ class MethodCallChecker(object):
 
     # Ensure all the required arguments have been given.
     still_needed = [k for k, v in arg_status.iteritems()
-                    if v == MethodCallChecker._NEEDED]
+                    if v == MethodSignatureChecker._NEEDED]
     if still_needed:
       raise AttributeError('No values given for arguments: %s'
                            % (' '.join(sorted(still_needed))))
@@ -956,7 +973,7 @@ class MockMethod(object):
     self._side_effects = None
 
     try:
-      self._checker = MethodCallChecker(method_to_mock)
+      self._checker = MethodSignatureChecker(method_to_mock)
     except ValueError:
       self._checker = None
 
