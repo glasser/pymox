@@ -259,6 +259,52 @@ class RegexTest(unittest.TestCase):
                  "<regular expression 'a\s+b', flags=4>")
 
 
+class IsTest(unittest.TestCase):
+  """Verify Is correctly checks equality based upon identity, not value"""
+
+  class AlwaysComparesTrue(object):
+    def __eq__(self, other):
+      return True
+    def __cmp__(self, other):
+      return 0
+    def __ne__(self, other):
+      return False
+
+  def testEqualityValid(self):
+    o1 = self.AlwaysComparesTrue()
+    self.assertTrue(mox.Is(o1), o1)
+
+  def testEqualityInvalid(self):
+    o1 = self.AlwaysComparesTrue()
+    o2 = self.AlwaysComparesTrue()
+    self.assertTrue(o1 == o2)
+    # but...
+    self.assertFalse(mox.Is(o1) == o2)
+
+  def testInequalityValid(self):
+    o1 = self.AlwaysComparesTrue()
+    o2 = self.AlwaysComparesTrue()
+    self.assertTrue(mox.Is(o1) != o2)
+
+  def testInequalityInvalid(self):
+    o1 = self.AlwaysComparesTrue()
+    self.assertFalse(mox.Is(o1) != o1)
+
+  def testEqualityInListValid(self):
+    o1 = self.AlwaysComparesTrue()
+    o2 = self.AlwaysComparesTrue()
+    isa_list = [mox.Is(o1), mox.Is(o2)]
+    str_list = [o1, o2]
+    self.assertTrue(isa_list == str_list)
+
+  def testEquailtyInListInvalid(self):
+    o1 = self.AlwaysComparesTrue()
+    o2 = self.AlwaysComparesTrue()
+    isa_list = [mox.Is(o1), mox.Is(o2)]
+    mixed_list = [o2, o1]
+    self.assertFalse(isa_list == mixed_list)
+
+
 class IsATest(unittest.TestCase):
   """Verify IsA correctly checks equality based upon class type, not value."""
 
