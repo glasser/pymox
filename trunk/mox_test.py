@@ -185,6 +185,19 @@ class InTest(unittest.TestCase):
     """Should return True if the item is a key in a dict."""
     self.assert_(mox.In("test") == {"test" : "module"})
 
+  def testItemInTuple(self):
+    """Should return True if the item is in the list."""
+    self.assert_(mox.In(1) == (1, 2, 3))
+
+  def testTupleInTupleOfTuples(self):
+    self.assert_(mox.In((1, 2, 3)) == ((1, 2, 3), (1, 2)))
+
+  def testItemNotInList(self):
+    self.failIf(mox.In(1) == [2, 3])
+
+  def testTupleNotInTupleOfTuples(self):
+    self.failIf(mox.In((1, 2)) == ((1, 2, 3), (4, 5)))
+
 
 class NotTest(unittest.TestCase):
   """Test Not correctly identifies False predicates."""
@@ -560,6 +573,13 @@ class MockAnythingTest(unittest.TestCase):
     self.mock_object._Replay()             # start replay mode
     self.assertRaises(mox.UnexpectedMethodCallError,
                       self.mock_object.OtherValidCall)
+
+#   def testReplayWithUnexpectedCell_BadSignatureWithTuple(self):
+#     self.mock_object.ValidCall(mox.In((1, 2, 3)))
+#     self.mock_object._Replay()
+#     self.assertRaises(mox.UnexpectedMethodCallError,
+#                       self.mock_object.ValidCall, 4)
+
 
   def testVerifyWithCompleteReplay(self):
     """Verify should not raise an exception for a valid replay."""

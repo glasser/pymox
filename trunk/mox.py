@@ -1238,10 +1238,14 @@ class Comparator:
     return not self.equals(rhs)
 
 class Is(Comparator):
+  """Comparison class used to check identity, instead of equality."""
+
   def __init__(self, obj):
     self._obj = obj
+
   def equals(self, rhs):
     return rhs is self._obj
+
   def __repr__(self):
     return "<is %r (%s)>" % (self._obj, id(self._obj))
 
@@ -1423,7 +1427,7 @@ class In(Comparator):
     return self._key in rhs
 
   def __repr__(self):
-    return '<sequence or map containing \'%s\'>' % self._key
+    return '<sequence or map containing \'%s\'>' % str(self._key)
 
 
 class Not(Comparator):
@@ -1491,7 +1495,8 @@ class ContainsKeyValue(Comparator):
       return False
 
   def __repr__(self):
-    return '<map containing the entry \'%s: %s\'>' % (self._key, self._value)
+    return '<map containing the entry \'%s: %s\'>' % (str(self._key),
+                                                      str(self._value))
 
 
 class ContainsAttributeValue(Comparator):
