@@ -1575,6 +1575,20 @@ class MoxTest(unittest.TestCase):
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
 
+  def testStubOutMethod_CalledAsUnboundMethod_Subclass_Comparator(self):
+    print 'this test'
+    self.mox.StubOutWithMock(mox_test_helper.TestClassFromAnotherModule, 'Value')
+    mox_test_helper.TestClassFromAnotherModule.Value(
+        mox.IsA(mox_test_helper.ChildClassFromAnotherModule)).AndReturn('foo')
+    self.mox.ReplayAll()
+
+    instance = mox_test_helper.ChildClassFromAnotherModule()
+    actual = mox_test_helper.TestClassFromAnotherModule.Value(instance)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+    self.assertEquals('foo', actual)
+
   def testStubOutMethod_CalledAsUnboundMethod_ActualInstance(self):
     instance = TestClass()
     self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
@@ -1598,7 +1612,6 @@ class MoxTest(unittest.TestCase):
     # This should fail, since the instances are different
     self.assertRaises(mox.UnexpectedMethodCallError,
                       TestClass.OtherValidCall, "wrong self")
-
 
     self.mox.VerifyAll()
     self.mox.UnsetStubs()

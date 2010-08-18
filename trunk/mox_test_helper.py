@@ -95,6 +95,17 @@ class TestClassFromAnotherModule(object):
     return 'Not mock'
 
 
+class ChildClassFromAnotherModule(TestClassFromAnotherModule):
+  """A child class of TestClassFromAnotherModule.
+
+  Used to test stubbing out unbound methods, where child classes
+  are eventually bound.
+  """
+
+  def __init__(self):
+    TestClassFromAnotherModule.__init__(self)
+
+
 class CallableClass(object):
 
   def __init__(self, one, two, nine=None):
@@ -109,6 +120,7 @@ class CallableClass(object):
 
 def MyTestFunction(one, two, nine=None):
   pass
+
 
 class ExampleClass(object):
   def TestMethod(self, one, two, nine=None):

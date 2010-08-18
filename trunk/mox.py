@@ -899,8 +899,17 @@ class MethodSignatureChecker(object):
     if inspect.ismethod(self._method):
       # The extra param accounts for the bound instance.
       if len(params) == len(self._args) + 1:
-        clazz = getattr(self._method, 'im_class', None)
-        if isinstance(params[0], clazz) or params[0] == clazz:
+        expected = getattr(self._method, 'im_class', None)
+
+        # Check if the param is an instance of the expected class,
+        # or check equality (useful for checking Comparators).
+        if isinstance(params[0], expected) or params[0] == expected:
+          params = params[1:]
+        # If the IsA() comparator is being used, we need to check the
+        # inverse of the usual case - that the given instance is a subclass
+        # of the expected class.  For example, the code under test does
+        # late binding to a subclass.
+        elif isinstance(params[0], IsA) and params[0]._IsSubClass(expected):
           params = params[1:]
 
     # Check that each positional param is valid.
@@ -1284,8 +1293,26 @@ class IsA(Comparator):
       # things like cStringIO.StringIO.
       return type(rhs) == type(self._class_name)
 
+  def _IsSubClass(self, clazz):
+    """Check to see if the IsA comparators class is a subclass of clazz.
+
+    Args:
+      # clazz: a class object
+
+    Returns:
+      bool
+    """
+
+    try:
+      return issubclass(self._class_name, clazz)
+    except TypeError:
+      # Check raw types if there was a type error.  This is helpful for
+      # things like cStringIO.StringIO.
+      return type(clazz) == type(self._class_name)
+
   def __repr__(self):
-    return str(self._class_name)
+    return 'mox.IsA(%s) ' % str(self._class_name)
+
 
 class IsAlmost(Comparator):
   """Comparison class used to check whether a parameter is nearly equal
