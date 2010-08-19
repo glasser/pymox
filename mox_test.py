@@ -574,13 +574,6 @@ class MockAnythingTest(unittest.TestCase):
     self.assertRaises(mox.UnexpectedMethodCallError,
                       self.mock_object.OtherValidCall)
 
-#   def testReplayWithUnexpectedCell_BadSignatureWithTuple(self):
-#     self.mock_object.ValidCall(mox.In((1, 2, 3)))
-#     self.mock_object._Replay()
-#     self.assertRaises(mox.UnexpectedMethodCallError,
-#                       self.mock_object.ValidCall, 4)
-
-
   def testVerifyWithCompleteReplay(self):
     """Verify should not raise an exception for a valid replay."""
     self.mock_object.ValidCall()          # setup method call
@@ -1576,7 +1569,6 @@ class MoxTest(unittest.TestCase):
     self.assertEquals('foo', actual)
 
   def testStubOutMethod_CalledAsUnboundMethod_Subclass_Comparator(self):
-    print 'this test'
     self.mox.StubOutWithMock(mox_test_helper.TestClassFromAnotherModule, 'Value')
     mox_test_helper.TestClassFromAnotherModule.Value(
         mox.IsA(mox_test_helper.ChildClassFromAnotherModule)).AndReturn('foo')
@@ -1588,6 +1580,18 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
+
+  def testStubOuMethod_UnboundWithOptionalParams(self):
+    self.mox = mox.Mox()
+    self.mox.StubOutWithMock(TestClass, 'OptionalArgs')
+    TestClass.OptionalArgs(mox.IgnoreArg(), foo=2)
+    self.mox.ReplayAll()
+
+    t = TestClass()
+    TestClass.OptionalArgs(t, foo=2)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
 
   def testStubOutMethod_CalledAsUnboundMethod_ActualInstance(self):
     instance = TestClass()
@@ -2042,6 +2046,9 @@ class TestClass:
     pass
 
   def OtherValidCall(self):
+    pass
+
+  def OptionalArgs(self, foo=None):
     pass
 
   def ValidCallWithArgs(self, *args, **kwargs):
