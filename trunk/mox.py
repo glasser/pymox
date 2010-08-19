@@ -316,6 +316,7 @@ class Mox(object):
       stub = self.CreateMock(attr_to_replace)
     else:
       stub = self.CreateMockAnything(description='Stub for %s' % attr_to_replace)
+      stub.__name__ = attr_name
 
     self.stubs.Set(obj, attr_name, stub)
 
@@ -543,14 +544,12 @@ class MockObject(MockAnything, object):
     self._known_vars = set()
     self._class_to_mock = class_to_mock
     try:
-      self._description = class_to_mock.__name__
-      # If class_to_mock is a mock itself, then we'll get an UnknownMethodCall
-      # error here from the underlying call to __getattr__('__name__')
-    except (UnknownMethodCallError, AttributeError):
-      try:
+      if inspect.isclass(self._class_to_mock):
+        self._description = class_to_mock.__name__
+      else:
         self._description = type(class_to_mock).__name__
-      except AttributeError:
-        pass
+    except Exception:
+      pass
 
     for method in dir(class_to_mock):
       attr = getattr(class_to_mock, method)
@@ -769,6 +768,11 @@ class MockObject(MockAnything, object):
     """Return the class that is being mocked."""
 
     return self._class_to_mock
+
+  @property
+  def __name__(self):
+    """Return the name that is being mocked."""
+    return self._description
 
 
 class _MockObjectFactory(MockObject):
