@@ -898,7 +898,7 @@ class MethodSignatureChecker(object):
     # correct, this will cause extra executions of the function.
     if inspect.ismethod(self._method):
       # The extra param accounts for the bound instance.
-      if len(params) == len(self._args) + 1:
+      if len(params) == len(self._required_args) + 1:
         expected = getattr(self._method, 'im_class', None)
 
         # Check if the param is an instance of the expected class,
