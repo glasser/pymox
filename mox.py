@@ -130,7 +130,7 @@ class UnexpectedMethodCallError(Error):
       diff = differ.compare(str(unexpected_method).splitlines(True),
                             str(expected).splitlines(True))
       self._str = ("Unexpected method call.  unexpected:-  expected:+\n%s"
-                   % ("\n".join(diff),))
+                   % ("\n".join(line.rstrip() for line in diff),))
 
   def __str__(self):
     return self._str
@@ -1779,6 +1779,12 @@ class UnorderedGroup(MethodGroup):
   def __init__(self, group_name):
     super(UnorderedGroup, self).__init__(group_name)
     self._methods = []
+
+  def __str__(self):
+    return '%s "%s" pending calls:\n%s' % (
+        self.__class__.__name__,
+        self._group_name,
+        "\n".join(str(method) for method in self._methods))
 
   def AddMethod(self, mock_method):
     """Add a method to this group.
