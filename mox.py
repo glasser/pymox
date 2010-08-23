@@ -1562,7 +1562,7 @@ class ContainsAttributeValue(Comparator):
 
 
 class SameElementsAs(Comparator):
-  """Checks whether iterables contain the same elements (ignoring order).
+  """Checks whether sequences contain the same elements (ignoring order).
 
   Example:
   mock_dao.ProcessUsers(SameElementsAs('stevepm', 'salomaki'))
@@ -1574,8 +1574,8 @@ class SameElementsAs(Comparator):
     Args:
       expected_seq: a sequence
     """
-
-    self._expected_seq = expected_seq
+    # Store in case expected_seq is an iterator.
+    self._expected_list = list(expected_seq)
 
   def equals(self, actual_seq):
     """Check to see whether actual_seq has same elements as expected_seq.
@@ -1586,14 +1586,24 @@ class SameElementsAs(Comparator):
     Returns:
       bool
     """
+    try:
+      # Store in case actual_seq is an iterator.  We potentially iterate twice:
+      # once to make the dict, once in the list fallback.
+      actual_list = list(actual_seq)
+    except TypeError:
+      # actual_seq cannot be read as a sequence.
+      #
+      # This happens because Mox uses __eq__ both to check object equality (in
+      # MethodSignatureChecker) and to invoke Comparators.
+      return False
 
     try:
-      expected = dict([(element, None) for element in self._expected_seq])
-      actual = dict([(element, None) for element in actual_seq])
+      expected = dict([(element, None) for element in self._expected_list])
+      actual = dict([(element, None) for element in actual_list])
     except TypeError:
       # Fall back to slower list-compare if any of the objects are unhashable.
-      expected = list(self._expected_seq)
-      actual = list(actual_seq)
+      expected = self._expected_list
+      actual = actual_list
       expected.sort()
       actual.sort()
     return expected == actual

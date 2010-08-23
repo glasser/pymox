@@ -130,6 +130,19 @@ class SameElementsAsTest(unittest.TestCase):
     """Should return False if two lists with unhashable elements are unequal."""
     self.failIf(mox.SameElementsAs([{'a': 1}, {2: 'b'}]) == [{2: 'b'}])
 
+  def testActualIsNotASequence(self):
+    """Should return False if the actual object is not a sequence."""
+    self.failIf(mox.SameElementsAs([1]) == object())
+
+  def testOneUnhashableObjectInActual(self):
+    """Store the entire iterator for a correct comparison.
+
+    In a previous version of SameElementsAs, iteration stopped when an
+    unhashable object was encountered and then was restarted, so the actual list
+    appeared smaller than it was.
+    """
+    self.failIf(mox.SameElementsAs([1, 2]) == iter([{}, 1, 2]))
+
 
 class ContainsKeyValueTest(unittest.TestCase):
   """Test ContainsKeyValue correctly identifies key/value pairs in a dict.
