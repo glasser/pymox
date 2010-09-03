@@ -1568,7 +1568,7 @@ class MoxTest(unittest.TestCase):
     self.assertEquals('foo', actual)
     self.assertTrue(type(test_obj.OtherValidCall) is method_type)
 
-  def testStubOutMethod_CalledAsUnboundMethod_Comparator(self):
+  def testStubOutMethod_Unbound_Comparator(self):
     instance = TestClass()
     self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
 
@@ -1581,7 +1581,7 @@ class MoxTest(unittest.TestCase):
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
 
-  def testStubOutMethod_CalledAsUnboundMethod_Subclass_Comparator(self):
+  def testStubOutMethod_Unbound_Subclass_Comparator(self):
     self.mox.StubOutWithMock(mox_test_helper.TestClassFromAnotherModule, 'Value')
     mox_test_helper.TestClassFromAnotherModule.Value(
         mox.IsA(mox_test_helper.ChildClassFromAnotherModule)).AndReturn('foo')
@@ -1594,7 +1594,7 @@ class MoxTest(unittest.TestCase):
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
 
-  def testStubOuMethod_UnboundWithOptionalParams(self):
+  def testStubOuMethod_Unbound_WithOptionalParams(self):
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(TestClass, 'OptionalArgs')
     TestClass.OptionalArgs(mox.IgnoreArg(), foo=2)
@@ -1606,7 +1606,7 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
 
-  def testStubOutMethod_CalledAsUnboundMethod_ActualInstance(self):
+  def testStubOutMethod_Unbound_ActualInstance(self):
     instance = TestClass()
     self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
 
@@ -1619,7 +1619,7 @@ class MoxTest(unittest.TestCase):
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
 
-  def testStubOutMethod_CalledAsUnboundMethod_DifferentInstance(self):
+  def testStubOutMethod_Unbound_DifferentInstance(self):
     instance = TestClass()
     self.mox.StubOutWithMock(TestClass, 'OtherValidCall')
 
@@ -1633,7 +1633,42 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
 
-  def testStubOutMethod_CalledAsBoundMethod(self):
+  def testStubOutMethod_Unbound_NamedUsingPositional(self):
+    """Check positional parameters can be matched to keyword arguments."""
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'NamedParams')
+    instance = mox_test_helper.ExampleClass()
+    mox_test_helper.ExampleClass.NamedParams(instance, 'foo', baz=None)
+    self.mox.ReplayAll()
+
+    mox_test_helper.ExampleClass.NamedParams(instance, 'foo', baz=None)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_Unbound_NamedUsingPositional_SomePositional(self):
+    """Check positional parameters can be matched to keyword arguments."""
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'TestMethod')
+    instance = mox_test_helper.ExampleClass()
+    mox_test_helper.ExampleClass.TestMethod(instance, 'one', 'two', 'nine')
+    self.mox.ReplayAll()
+
+    mox_test_helper.ExampleClass.TestMethod(instance, 'one', 'two', 'nine')
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_Unbound_SpecialArgs(self):
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'SpecialArgs')
+    instance = mox_test_helper.ExampleClass()
+    mox_test_helper.ExampleClass.SpecialArgs(instance, 'foo', None, bar='bar')
+    self.mox.ReplayAll()
+
+    mox_test_helper.ExampleClass.SpecialArgs(instance, 'foo', None, bar='bar')
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_Bound_SimpleTest(self):
     t = self.mox.CreateMock(TestClass)
 
     t.MethodWithArgs(mox.IgnoreArg(), mox.IgnoreArg()).AndReturn('foo')
@@ -1644,6 +1679,53 @@ class MoxTest(unittest.TestCase):
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
     self.assertEquals('foo', actual)
+
+  def testStubOutMethod_Bound_NamedUsingPositional(self):
+    """Check positional parameters can be matched to keyword arguments."""
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'NamedParams')
+    instance = mox_test_helper.ExampleClass()
+    instance.NamedParams('foo', baz=None)
+    self.mox.ReplayAll()
+
+    instance.NamedParams('foo', baz=None)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_Bound_NamedUsingPositional_SomePositional(self):
+    """Check positional parameters can be matched to keyword arguments."""
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'TestMethod')
+    instance = mox_test_helper.ExampleClass()
+    instance.TestMethod(instance, 'one', 'two', 'nine')
+    self.mox.ReplayAll()
+
+    instance.TestMethod(instance, 'one', 'two', 'nine')
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOutMethod_Bound_SpecialArgs(self):
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'SpecialArgs')
+    instance = mox_test_helper.ExampleClass()
+    instance.SpecialArgs(instance, 'foo', None, bar='bar')
+    self.mox.ReplayAll()
+
+    instance.SpecialArgs(instance, 'foo', None, bar='bar')
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
+  def testStubOut_SignatureMatching_init_(self):
+    self.mox.StubOutWithMock(mox_test_helper.ExampleClass, '__init__')
+    mox_test_helper.ExampleClass.__init__(mox.IgnoreArg())
+    self.mox.ReplayAll()
+
+    # Create an instance of a child class, which calls the parent
+    # __init__
+    mox_test_helper.ChildExampleClass()
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
 
   def testStubOutClass_OldStyle(self):
     """Test a mocked class whose __init__ returns a Mock."""
@@ -2061,7 +2143,7 @@ class TestClass:
   def OtherValidCall(self):
     pass
 
-  def OptionalArgs(self, foo=None):
+  def OptionalArgs(self, foo='boom'):
     pass
 
   def ValidCallWithArgs(self, *args, **kwargs):
