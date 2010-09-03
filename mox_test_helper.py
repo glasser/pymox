@@ -123,5 +123,20 @@ def MyTestFunction(one, two, nine=None):
 
 
 class ExampleClass(object):
+  def __init__(self, foo='bar'):
+    pass
+
   def TestMethod(self, one, two, nine=None):
     pass
+
+  def NamedParams(self, ignore, foo='bar', baz='qux'):
+    pass
+
+  def SpecialArgs(self, *args, **kwargs):
+    pass
+
+
+# This class is used to test stubbing out __init__ of a parent class.
+class ChildExampleClass(ExampleClass):
+  def __init__(self):
+    ExampleClass.__init__(self)
