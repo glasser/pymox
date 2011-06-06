@@ -1245,10 +1245,7 @@ class Comparator:
     raise NotImplementedError, 'method must be implemented by a subclass.'
 
   def __eq__(self, rhs):
-    try:
-      return self.equals(rhs)
-    except Exception:
-      return False
+    return self.equals(rhs)
 
   def __ne__(self, rhs):
     return not self.equals(rhs)
