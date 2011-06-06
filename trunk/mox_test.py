@@ -422,6 +422,37 @@ class IsAlmostTest(unittest.TestCase):
     self.assertNotEquals(mox.IsAlmost('1.8999999999'), '1.9')
 
 
+class ValueRememberTest(unittest.TestCase):
+  """Verify comparing argument against remembered value."""
+
+  def testValueEquals(self):
+    """Verify that value will compare to stored value."""
+    value = mox.Value()
+    value.store_value('hello world')
+    self.assertEquals(value, 'hello world')
+
+  def testNoValue(self):
+    """Verify that uninitialized value does not compare to "empty" values."""
+    value = mox.Value()
+    self.assertNotEquals(value, None)
+    self.assertNotEquals(value, False)
+    self.assertNotEquals(value, 0)
+    self.assertNotEquals(value, '')
+    self.assertNotEquals(value, ())
+    self.assertNotEquals(value, [])
+    self.assertNotEquals(value, {})
+    self.assertNotEquals(value, object())
+    self.assertNotEquals(value, set())
+
+  def testRememberValue(self):
+    """Verify that comparing against remember will store argument."""
+    value = mox.Value()
+    remember = mox.Remember(value)
+    self.assertNotEquals(value, 'hello world')  # value not yet stored.
+    self.assertEquals(remember, 'hello world')  # store value here.
+    self.assertEquals(value, 'hello world')     # compare against stored value.
+
+
 class MockMethodTest(unittest.TestCase):
   """Test class to verify that the MockMethod class is working correctly."""
 

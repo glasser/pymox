@@ -1763,6 +1763,61 @@ class IgnoreArg(Comparator):
     return '<IgnoreArg>'
 
 
+class Value(Comparator):
+  """Compares argument against a remembered value.
+
+  To be used in conjunction with Remember comparator.  See Remember()
+  for example.
+  """
+
+  def __init__(self):
+    self._value = None
+    self._has_value = False
+
+  def store_value(self, rhs):
+    self._value = rhs
+    self._has_value = True
+
+  def equals(self, rhs):
+    if not self._has_value:
+      return False
+    else:
+      return rhs == self._value
+
+  def __repr__(self):
+    if self._has_value:
+      return "<Value %r>" % self._value
+    else:
+      return "<Value>"
+
+
+class Remember(Comparator):
+  """Remembers the argument to a value store.
+
+  To be used in conjunction with Value comparator.
+
+  Example:
+  # Remember the argument for one method call.
+  users_list = Value()
+  mock_dao.ProcessUsers(Remember(users_list))
+
+  # Check argument against remembered value.
+  mock_dao.ReportUsers(users_list)
+  """
+
+  def __init__(self, value_store):
+    if not isinstance(value_store, Value):
+      raise TypeError("value_store is not an instance of the Value class")
+    self._value_store = value_store
+
+  def equals(self, rhs):
+    self._value_store.store_value(rhs)
+    return True
+
+  def __repr__(self):
+    return "<Remember %d>" % id(self._value_store)
+
+
 class MethodGroup(object):
   """Base class containing common behaviour for MethodGroups."""
 
