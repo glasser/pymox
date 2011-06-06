@@ -446,6 +446,8 @@ class MockAnything:
     Returns:
       A new MockMethod aware of MockAnything's state (record or replay).
     """
+    if method_name == '__dir__':
+        return self.__class__.__dir__.__get__(self, self.__class__)
 
     return self._CreateMockMethod(method_name)
 
