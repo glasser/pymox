@@ -243,7 +243,7 @@ class Mox(object):
     self._mock_objects = []
     self.stubs = stubout.StubOutForTesting()
 
-  def CreateMock(self, class_to_mock, attrs={}):
+  def CreateMock(self, class_to_mock, attrs=None):
     """Create a new mock object.
 
     Args:
@@ -255,6 +255,8 @@ class Mox(object):
     Returns:
       MockObject that can be used as the class_to_mock would be.
     """
+    if attrs is None:
+      attrs = {}
     new_mock = MockObject(class_to_mock, attrs=attrs)
     self._mock_objects.append(new_mock)
     return new_mock
@@ -521,7 +523,7 @@ class MockAnything:
 class MockObject(MockAnything, object):
   """A mock object that simulates the public/protected interface of a class."""
 
-  def __init__(self, class_to_mock, attrs={}):
+  def __init__(self, class_to_mock, attrs=None):
     """Initialize a mock object.
 
     This determines the methods and properties of the class and stores them.
@@ -536,6 +538,8 @@ class MockObject(MockAnything, object):
       PrivateAttributeError: if a supplied attribute is not public.
       ValueError: if an attribute would mask an existing method.
     """
+    if attrs is None:
+      attrs = {}
 
     # This is used to hack around the mixin/inheritance of MockAnything, which
     # is not a proper object (it can be anything. :-)
