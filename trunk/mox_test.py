@@ -101,6 +101,35 @@ class AndTest(unittest.TestCase):
     self.failIf(mox.And(mox.In("NOTFOUND"),
                           mox.ContainsKeyValue("mock", "obj")) == test_dict)
 
+class FuncTest(unittest.TestCase):
+  """Test Func correctly evaluates based upon true-false return."""
+
+  def testFuncTrueFalseEvaluation(self):
+    """Should return True if the validating function returns True."""
+    equals_one = lambda x: x == 1
+    always_none = lambda x: None
+
+    self.assert_(mox.Func(equals_one) == 1)
+    self.failIf(mox.Func(equals_one) == 0)
+
+
+    self.failIf(mox.Func(always_none) == 1)
+    self.failIf(mox.Func(always_none) == 0)
+    self.failIf(mox.Func(always_none) == None)
+
+  def testFuncExceptionPropagation(self):
+    """Exceptions within the validating function should propagate."""
+    class TestException(Exception):
+      pass
+
+    def raiseExceptionOnNotOne(value):
+      if value != 1:
+        raise TestException
+      else:
+        return True
+
+    self.assert_(mox.Func(raiseExceptionOnNotOne) == 1)
+    self.assertRaises(TestException, mox.Func(raiseExceptionOnNotOne).__eq__, 2)
 
 class SameElementsAsTest(unittest.TestCase):
   """Test SameElementsAs correctly identifies sequences with same elements."""
@@ -1714,6 +1743,33 @@ class MoxTest(unittest.TestCase):
 
     self.mox.VerifyAll()
     self.mox.UnsetStubs()
+
+  def testStubOutMethod_Func_PropgatesExceptions(self):
+    """Errors in a Func comparator should propagate to the calling method."""
+    class TestException(Exception):
+      pass
+
+    def raiseExceptionOnNotOne(value):
+      if value == 1:
+        return True
+      else:
+        raise TestException
+
+    test_obj = TestClass()
+    self.mox.StubOutWithMock(test_obj, 'MethodWithArgs')
+    test_obj.MethodWithArgs(
+        mox.IgnoreArg(), mox.Func(raiseExceptionOnNotOne)).AndReturn(1)
+    test_obj.MethodWithArgs(
+        mox.IgnoreArg(), mox.Func(raiseExceptionOnNotOne)).AndReturn(1)
+    self.mox.ReplayAll()
+
+    self.assertEqual(test_obj.MethodWithArgs('ignored', 1), 1)
+    self.assertRaises(TestException,
+                      test_obj.MethodWithArgs, 'ignored', 2)
+
+    self.mox.VerifyAll()
+    self.mox.UnsetStubs()
+
 
   def testStubOut_SignatureMatching_init_(self):
     self.mox.StubOutWithMock(mox_test_helper.ExampleClass, '__init__')
