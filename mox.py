@@ -913,7 +913,17 @@ class MethodSignatureChecker(object):
 
         # Check if the param is an instance of the expected class,
         # or check equality (useful for checking Comparators).
-        if isinstance(params[0], expected) or params[0] == expected:
+
+        # This is a hack to work around the fact that the first
+        # parameter can be a Comparator, and the comparison may raise
+        # an exception during this comparison, which is OK.
+        try:
+          param_equality = (params[0] == expected)
+        except:
+          param_equality = False;
+
+
+        if isinstance(params[0], expected) or param_equality:
           params = params[1:]
         # If the IsA() comparator is being used, we need to check the
         # inverse of the usual case - that the given instance is a subclass

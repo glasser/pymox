@@ -1282,6 +1282,27 @@ class MoxTest(unittest.TestCase):
     self.assertEquals("yes", ret_val)
     self.mox.VerifyAll()
 
+  def testSignatureMatchingWithComparatorAsFirstArg(self):
+    """Test that the first argument can be a comparator."""
+
+    def VerifyLen(val):
+      """This will raise an exception when not given a list.
+
+      This exception will be raised when trying to infer/validate the
+      method signature.
+      """
+      return len(val) != 1
+
+    mock_obj = self.mox.CreateMock(TestClass)
+    # This intentionally does not name the 'nine' param so it triggers
+    # deeper inspection.
+    mock_obj.MethodWithArgs(mox.Func(VerifyLen), mox.IgnoreArg(), None)
+    self.mox.ReplayAll()
+
+    mock_obj.MethodWithArgs([1, 2], "foo", None)
+
+    self.mox.VerifyAll()
+
   def testCallableObject(self):
     """Test recording calls to a callable object works."""
     mock_obj = self.mox.CreateMock(CallableClass)
