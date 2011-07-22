@@ -304,7 +304,7 @@ behavior, you probably want to use a Comparator.
 
   * `And()` and `Or()`: combine comparators.  These both take a variable number of comparators.
 {{{
-  dao.BulkInsert(And(In(test_person), IsA(list))
+  dao.BulkInsert(And(In(test_person), IsA(list)))
 }}}
 
 You can write your own comparators.  It's easy!
@@ -377,7 +377,7 @@ this is the case are when real object might treat some object as an
 "out" or "in/out" parameter or the real object is meant to change some
 shared resource that modifies the behavior of your testing unit.  It
 is possible to simulate these side effects by using
-`WithSideEffect`.
+`WithSideEffects`.
 
 {{{
   # This function will be passed to WithSideEffects; when
@@ -471,7 +471,7 @@ class PersonDao(object):
     self._db = db
 
   def InsertPerson(self, person):
-    db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
+    self._db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
 }}}
 
 So now you can write the test:
