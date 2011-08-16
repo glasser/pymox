@@ -419,7 +419,7 @@ so I've added support for this.
  print 'this is silly, but it happens:', mock_obj.MY_CLASS_VARIABLE
 }}}
 
-There is support for comparing mock objects.  This could be help for
+There is support for comparing mock objects.  This could be helpful for
 testing that your mock got injected into the proper places:
 
 {{{
