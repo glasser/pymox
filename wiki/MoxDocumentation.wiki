@@ -357,17 +357,12 @@ You may have code that doesn't use dependency injection, and just creates object
 For example, to stub out the foo.bar module which contains the Baz class that your code creates directly:
 
 {{{
-   # Create a mock instance of the Baz class.  This must be done first
-   # or else the Mock will be created from the Stub (created in the next step).
-   mock_baz = self.mox.CreateMock(Baz)
-
-   # Stub out the bar module, so we can control it, and force it to 
-   # act like a factory for our mocks.
-   self.mox.StubOutWithMock(foo, 'bar', use_mock_anything=True)
-
-   # Record that the creation of Baz should return a the mock baz.
-   foo.bar.Baz().AndReturn(mock_baz)
+  # Mock out the class using Mox.
+ self.mox.StubOutClassWithMocks(foo.bar.Baz)
+  # Record that the creation of Baz should return a mock baz.
+ mock_baz = foo.bar.Baz()
 }}}
+
 
 == Side Effects ==
 
