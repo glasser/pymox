@@ -2054,6 +2054,7 @@ class MoxMetaTestBase(type):
   """
 
   def __init__(cls, name, bases, d):
+    super(MoxMetaTestBase, cls).__init__(name, bases, d)
     type.__init__(cls, name, bases, d)
 
     # also get all the attributes from the base classes to account
