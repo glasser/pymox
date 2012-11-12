@@ -1253,7 +1253,18 @@ class MoxTest(unittest.TestCase):
 
   def testCreateObject(self):
     """Mox should create a mock object."""
-    mock_obj = self.mox.CreateMock(TestClass)
+    self.mox.CreateMock(TestClass)
+
+  def testCreateMockOfType(self):
+    self.mox.CreateMock(type)
+
+  def testCreateMockWithBogusAttr(self):
+
+    class BogusAttrClass(object):
+      __slots__ = 'no_such_attr',
+
+    foo = BogusAttrClass()
+    self.mox.CreateMock(foo)
 
   def testVerifyObjectWithCompleteReplay(self):
     """Mox should replay and verify all objects it created."""
@@ -1664,7 +1675,8 @@ class MoxTest(unittest.TestCase):
     self.assertEquals('foo', actual)
 
   def testStubOutMethod_Unbound_Subclass_Comparator(self):
-    self.mox.StubOutWithMock(mox_test_helper.TestClassFromAnotherModule, 'Value')
+    self.mox.StubOutWithMock(mox_test_helper.TestClassFromAnotherModule,
+                             'Value')
     mox_test_helper.TestClassFromAnotherModule.Value(
         mox.IsA(mox_test_helper.ChildClassFromAnotherModule)).AndReturn('foo')
     self.mox.ReplayAll()

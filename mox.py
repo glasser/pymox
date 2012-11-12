@@ -600,7 +600,10 @@ class MockObject(MockAnything, object):
       pass
 
     for method in dir(class_to_mock):
-      attr = getattr(class_to_mock, method)
+      try:
+        attr = getattr(class_to_mock, method)
+      except AttributeError:
+        continue
       if callable(attr):
         self._known_methods.add(method)
       elif not (type(attr) is property):
@@ -2062,7 +2065,11 @@ class MoxMetaTestBase(type):
     for base in bases:
       for attr_name in dir(base):
         if attr_name not in d:
-          d[attr_name] = getattr(base, attr_name)
+          try:
+            attr_value = getattr(base, attr_name)
+          except AttributeValue:
+            continue
+          d[attr_name] = attr_value
 
     for func_name, func in d.items():
       if func_name.startswith('test') and callable(func):
