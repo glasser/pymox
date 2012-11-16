@@ -118,6 +118,25 @@ class CallableClass(object):
     return 'Not mock'
 
 
+try:
+  import abc
+
+  class MyDictABC(object):
+    __metaclass__ = abc.ABCMeta
+
+  MyDictABC.register(dict)
+
+  class CallableSubclassOfMyDictABC(MyDictABC):
+
+    def __call__(self, one):
+      return 'Not mock'
+
+    def __getitem__(self, key, default=None):
+      return 'Not mock'
+except ImportError:
+  pass  # Python 2.5 or earlier
+
+
 def MyTestFunction(one, two, nine=None):
   pass
 
