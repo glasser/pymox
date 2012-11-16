@@ -61,6 +61,10 @@ Suggested usage / workflow:
   my_mox.VerifyAll()
 """
 
+try:
+  import abc
+except ImportError:
+  abc = None  # Python 2.5 and earlier
 from collections import deque
 import difflib
 import inspect
@@ -260,6 +264,8 @@ class Mox(object):
 
   # A list of types that may be stubbed out with a MockObjectFactory.
   _USE_MOCK_FACTORY = [types.ClassType, types.ObjectType, types.TypeType]
+  if abc:
+    _USE_MOCK_FACTORY.append(abc.ABCMeta)
 
   def __init__(self):
     """Initialize a new Mox."""

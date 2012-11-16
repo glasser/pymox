@@ -19,6 +19,7 @@
 import cStringIO
 import unittest
 import re
+import sys
 
 import mox
 
@@ -1897,6 +1898,39 @@ class MoxTest(unittest.TestCase):
     # Verify
     self.assertEquals('mock', actual_one)
     self.assertEquals('called mock', actual_two)
+
+  try:
+    import abc
+    # I'd use the unittest skipping decorators for this but I want to support
+    # older versions of Python that don't have them.
+    def testStubOutClass_ABCMeta(self):
+      self.mox.StubOutClassWithMocks(mox_test_helper,
+                                     'CallableSubclassOfMyDictABC')
+      mock_foo = mox_test_helper.CallableSubclassOfMyDictABC(foo='!mock bar')
+      mock_foo['foo'].AndReturn('mock bar')
+      mock_spam = mox_test_helper.CallableSubclassOfMyDictABC(spam='!mock eggs')
+      mock_spam('beans').AndReturn('called mock')
+
+      self.mox.ReplayAll()
+
+      foo = mox_test_helper.CallableSubclassOfMyDictABC(foo='!mock bar')
+      actual_foo_bar = foo['foo']
+
+      spam = mox_test_helper.CallableSubclassOfMyDictABC(spam='!mock eggs')
+      actual_spam = spam('beans')
+
+      self.mox.VerifyAll()
+      self.mox.UnsetStubs()
+
+      # Verify the correct mocks were returned
+      self.assertEquals(mock_foo, foo)
+      self.assertEquals(mock_spam, spam)
+
+      # Verify
+      self.assertEquals('mock bar', actual_foo_bar)
+      self.assertEquals('called mock', actual_spam)
+  except ImportError:
+    print >>sys.stderr, "testStubOutClass_ABCMeta. ... Skipped - no abc module"
 
   def testStubOutClass_NotAClass(self):
     self.assertRaises(TypeError, self.mox.StubOutClassWithMocks,
