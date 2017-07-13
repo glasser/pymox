@@ -9,5 +9,5 @@ jobs:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
     steps:
       - checkout
-      - run: python mox_test.py
+      - run: python2.7 mox_test.py
       # - run: codecov --token=$CODECOV_TOKEN
