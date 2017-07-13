@@ -5,7 +5,7 @@ jobs:
     working_directory: ~/pymox
     environment:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
-  steps:
-    - checkout
-    - run: python mox_test.py
-    - codecov --token=$CODECOV_TOKEN:
+    steps:
+      - checkout
+      - run: python mox_test.py
+      - codecov --token=$CODECOV_TOKEN:
