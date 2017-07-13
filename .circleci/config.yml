@@ -10,4 +10,4 @@ jobs:
     steps:
       - checkout
       - run: python mox_test.py
-      - run: codecov --token=$CODECOV_TOKEN:
+      # - run: codecov --token=$CODECOV_TOKEN
