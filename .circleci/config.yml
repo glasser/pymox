@@ -7,7 +7,4 @@ jobs:
   steps:
     - checkout
     - run: python mox_test.py
-
-test:
-  post:
     - codecov --token=$CODECOV_TOKEN:
