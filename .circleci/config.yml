@@ -9,6 +9,6 @@ jobs:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
     steps:
       - checkout
-      - run: python2.7 mox_test.py
+      - run: coverage run mox_test.py
       - run: sudo pip install coverage codecov==1.6.3
       - run: codecov --token=$CODECOV_TOKEN
