@@ -14,4 +14,4 @@ jobs:
       - run: virtualenv -p /usr/bin/python2.7 py27 && . py27/bin/activate
       - run: py27/bin/pip install coverage codecov==1.6.3
       - run: py27/bin/coverage run mox_test.py && py27/bin/coverage report -m && py27/bin/coverage xml -o $CIRCLE_TEST_REPORTS/pymox-tests-$CIRCLE_NODE_INDEX.xml
-      - run: codecov --token=$CODECOV_TOKEN
+      - run: py27/bin/codecov --token=$CODECOV_TOKEN
