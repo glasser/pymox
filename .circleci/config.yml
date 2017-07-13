@@ -7,11 +7,10 @@ jobs:
       - image: circleci/python
     environment:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
-      CIRCLE_TEST_REPORTS: pymox_test_reports
     steps:
       - checkout
       - run: sudo pip install virtualenv
       - run: virtualenv -p /usr/bin/python2.7 py27 && . py27/bin/activate
       - run: py27/bin/pip install coverage codecov==1.6.3
-      - run: py27/bin/coverage run mox_test.py && py27/bin/coverage report -m && py27/bin/coverage xml -o $CIRCLE_TEST_REPORTS/pymox-tests-$CIRCLE_NODE_INDEX.xml
+      - run: py27/bin/coverage run mox_test.py && py27/bin/coverage report -m && py27/bin/coverage xml
       - run: py27/bin/codecov --token=$CODECOV_TOKEN
