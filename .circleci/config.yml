@@ -9,7 +9,8 @@ jobs:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
     steps:
       - checkout
-      - run: sudo pip install virtualenv coverage codecov==1.6.3
+      - run: sudo pip install virtualenv
       - run: virtualenv -p /usr/bin/python2.7 py27 && . py27/bin/activate
+      - run: pip install coverage codecov==1.6.3
       - run: coverage run mox_test.py && coverage report -m && coverage xml -o $CIRCLE_TEST_REPORTS/pymox-tests-$CIRCLE_NODE_INDEX.xml
       - run: codecov --token=$CODECOV_TOKEN
