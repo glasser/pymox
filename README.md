@@ -1,4 +1,5 @@
 ![circle-ci-badge](https://circleci.com/gh/ivancrneto/pymox.svg?style=shield&circle-token=:circle-tokena7354b480e49feb7bcf87039e32ddae07379f344)
+[![codecov](https://codecov.io/gh/ivancrneto/pymox/branch/master/graph/badge.svg)](https://codecov.io/gh/ivancrneto/pymox)
 
 Mox is an open source mock object framework for Python, inspired by
 the Java library EasyMock.
