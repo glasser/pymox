@@ -172,6 +172,3 @@ texinfo_documents = [
      author, 'pymox', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
