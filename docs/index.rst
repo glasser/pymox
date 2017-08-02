@@ -54,6 +54,7 @@ Getting started
 * :doc:`Why use Pymox </why>`
 * :doc:`Installation </install>`
 * :doc:`Quick tutorial </tutorial>`
+* :doc:`Reference </reference>`
 
 
 Indices and tables
