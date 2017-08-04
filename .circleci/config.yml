@@ -19,12 +19,15 @@ jobs:
             echo 'export PATH="/home/circleci/.pyenv/bin:$PATH"' >>~/.bash_profile
             echo 'eval "$(pyenv init -)"' >>~/.bash_profile
             echo 'eval "$(pyenv virtualenv-init -)"' >>~/.bash_profile
-            . ~/.bash_profile
+            source ~/.bash_profile
             pyenv install 2.7.13
             pyenv install 3.3.6
             pyenv install 3.4.6
             pyenv install 3.5.3
             pyenv install 3.6.2
             pyenv local 2.7.13 3.3.6 3.4.6 3.5.3 3.6.2
-      - run: tox
+      - run:
+          command: |
+            source ~/.bash_profile
+            tox
       - run: codecov --token=$CODECOV_TOKEN
