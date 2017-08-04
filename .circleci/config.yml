@@ -9,10 +9,20 @@ jobs:
       CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
     steps:
       - checkout
-      - run: sudo pip install virtualenv
-      - run: virtualenv -p /usr/bin/python2.7 py27 && . py27/bin/activate
-      - run: py27/bin/pip install coverage codecov==1.6.3
-      - run: py27/bin/pip install tox tox-pyenv
-      - run: py27/bin/pyenv local 2.6.8 2.7.10 3.3.3 3.4.3 3.5.0
-      - run: py27/bin/coverage run mox_test.py && py27/bin/coverage report -m && py27/bin/coverage xml
-      - run: py27/bin/codecov --token=$CODECOV_TOKEN
+      - run:
+          command: |
+            sudo pip install codecov==1.6.3
+            sudo pip install tox tox-pyenv
+      - run:
+          command: |
+            curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+            export PATH="/home/circleci/.pyenv/bin:$PATH"
+            eval "$(pyenv init -)"
+            eval "$(pyenv virtualenv-init -)"
+            pyenv install 2.7.13
+            pyenv install 3.3.6
+            pyenv install 3.4.6
+            pyenv install 3.5.3
+            pyenv install 3.6.2
+            pyenv local 2.7.13 3.3.6 3.4.6 3.5.3 3.6.2
+      - run: codecov --token=$CODECOV_TOKEN
