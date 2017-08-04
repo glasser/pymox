@@ -53,7 +53,8 @@ Getting started
 ---------------
 * :doc:`Why use Pymox </why>`
 * :doc:`Installation </install>`
-* :doc:`Quick tutorial </tutorial>`
+* :doc:`Tutorial </tutorial>`
+* :doc:`Examples </examples>`
 * :doc:`Reference </reference>`
 
 
