@@ -2,59 +2,25 @@
 [![codecov](https://codecov.io/gh/ivancrneto/pymox/branch/master/graph/badge.svg)](https://codecov.io/gh/ivancrneto/pymox)
 [![Documentation Status](https://readthedocs.org/projects/pymox/badge/?version=latest)](http://pymox.readthedocs.io/en/latest/?badge=latest)
 
-Mox is an open source mock object framework for Python, inspired by
-the Java library EasyMock.
+Pymox is an open source mock object framework for Python.
 
-To install:
+## First Steps
 
-  $ python setup.py install
+[Installation](http://pymox.readthedocs.io/en/latest/install.html)
+[Tutorial](http://pymox.readthedocs.io/en/latest/tutorial.html)
 
-To run Mox's internal tests:
+## Documentation
 
-  $ python mox_test.py
+[http://pymox.readthedocs.io/en/latest/index.html](http://pymox.readthedocs.io/en/latest/index.html)
 
-Basic usage:
+## Community
 
-  import unittest
-  import mox
-
-  class PersonTest(mox.MoxTestBase):
-
-    def testUsingMox(self):
-      # Create a mock Person
-      mock_person = self.mox.CreateMock(Person)
-
-      test_person = ...
-      test_primary_key = ...
-      unknown_person = ...
-
-      # Expect InsertPerson to be called with test_person; return
-      # test_primary_key at that point
-      mock_person.InsertPerson(test_person).AndReturn(test_primary_key)
-
-      # Raise an exception when this is called
-      mock_person.DeletePerson(unknown_person).AndRaise(UnknownPersonError())
-
-      # Switch from record mode to replay mode
-      self.mox.ReplayAll()
-
-      # Run the test
-      ret_pk = mock_person.InsertPerson(test_person)
-      self.assertEquals(test_primary_key, ret_pk)
-      self.assertRaises(UnknownPersonError, mock_person, unknown_person)
-
-For more documentation, see:
-
-  http://code.google.com/p/pymox/wiki/MoxDocumentation
-
-For more information, see:
-
-  http://code.google.com/p/pymox/
-
-Our user and developer discussion group is:
+User and developer discussion group:
 
   http://groups.google.com/group/mox-discuss
 
-Mox is Copyright 2008 Google Inc, and licensed under the Apache
+## Disclaimer
+
+Pymox is a fork of Mox. Mox is Copyright 2008 Google Inc, and licensed under the Apache
 License, Version 2.0; see the file COPYING for details.  If you would
 like to help us improve Mox, join the group.
