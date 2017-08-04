@@ -12,5 +12,7 @@ jobs:
       - run: sudo pip install virtualenv
       - run: virtualenv -p /usr/bin/python2.7 py27 && . py27/bin/activate
       - run: py27/bin/pip install coverage codecov==1.6.3
+      - run: py27/bin/pip install tox tox-pyenv
+      - run: py27/bin/pyenv local 2.6.8 2.7.10 3.3.3 3.4.3 3.5.0
       - run: py27/bin/coverage run mox_test.py && py27/bin/coverage report -m && py27/bin/coverage xml
       - run: py27/bin/codecov --token=$CODECOV_TOKEN
