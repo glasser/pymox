@@ -1711,9 +1711,14 @@ class SameElementsAs(Comparator):
       # Fall back to slower list-compare if any of the objects are unhashable.
       expected = self._expected_list
       actual = actual_list
-      expected.sort()
-      actual.sort()
-    return expected == actual
+      for element in actual:
+        if element not in expected:
+            return False
+      for element in expected:
+        if element not in actual:
+          return False
+    else:
+      return set(actual_list) == set(self._expected_list)
 
   def __repr__(self):
     return '<sequence with same elements as \'%s\'>' % self._expected_list
