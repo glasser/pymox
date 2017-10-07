@@ -1515,7 +1515,10 @@ class Regex(Comparator):
       return False
 
   def __repr__(self):
-    s = '<regular expression \'%s\'' % self.regex.pattern
+    pattern = self.regex.pattern
+    if isinstance(pattern, six.binary_type):
+      pattern = pattern.decode()
+    s = '<regular expression \'{}\''.format(pattern)
     if self.regex.flags:
       s += ', flags=%d' % self.regex.flags
     s += '>'
