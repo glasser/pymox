@@ -1717,6 +1717,7 @@ class SameElementsAs(Comparator):
       for element in expected:
         if element not in actual:
           return False
+      return True
     else:
       return set(actual_list) == set(self._expected_list)
 
