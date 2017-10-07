@@ -1188,6 +1188,9 @@ class MockMethod(object):
             self._params == rhs._params and
             self._named_params == rhs._named_params)
 
+  def __hash__(self):
+    return id(self)
+
   def __ne__(self, rhs):
     """Test whether this MockMethod is not equivalent to another MockMethod.
 
