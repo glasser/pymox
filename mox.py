@@ -69,6 +69,7 @@ from collections import deque
 import difflib
 import inspect
 import re
+import six
 import types
 import unittest
 
@@ -222,7 +223,7 @@ class UnexpectedMockCreationError(Error):
 
     if self._named_params:
       error += ", " + ", ".join(["%s=%s" % (k, v) for k, v in
-                                 self._named_params.iteritems()])
+                                 six.iteritems(self._named_params)])
 
     error += ")"
     return error
@@ -257,13 +258,23 @@ class Mox(object):
 
   # A list of types that should be stubbed out with MockObjects (as
   # opposed to MockAnythings).
-  _USE_MOCK_OBJECT = [types.ClassType, types.FunctionType, types.InstanceType,
-                      types.ModuleType, types.ObjectType, types.TypeType,
-                      types.MethodType, types.UnboundMethodType,
-                      ]
+  _USE_MOCK_OBJECT = [
+    getattr(types, 'ClassType', type),
+    types.FunctionType,
+    getattr(types, 'InstanceType', object),
+    types.ModuleType,
+    getattr(types, 'ObjectType', object),
+    getattr(types, 'TypeType', type),
+    types.MethodType,
+    getattr(types, 'UnboundMethodType', types.FunctionType),
+  ]
 
   # A list of types that may be stubbed out with a MockObjectFactory.
-  _USE_MOCK_FACTORY = [types.ClassType, types.ObjectType, types.TypeType]
+  _USE_MOCK_FACTORY = [
+    getattr(types, 'ClassType', type),
+    getattr(types, 'ObjectType', object),
+    getattr(types, 'TypeType', type),
+  ]
   if abc:
     _USE_MOCK_FACTORY.append(abc.ABCMeta)
 
@@ -1006,7 +1017,7 @@ class MethodSignatureChecker(object):
       self._RecordArgumentGiven(arg_name, arg_status)
 
     # Ensure all the required arguments have been given.
-    still_needed = [k for k, v in arg_status.iteritems()
+    still_needed = [k for k, v in six.iteritems(arg_status)
                     if v == MethodSignatureChecker._NEEDED]
     if still_needed:
       raise AttributeError('No values given for arguments: %s'

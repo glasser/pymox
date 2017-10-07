@@ -133,7 +133,7 @@ try:
 
     def __getitem__(self, key, default=None):
       return 'Not mock'
-except ImportError:
+except (ImportError, AttributeError):
   pass  # Python 2.5 or earlier
 
 
