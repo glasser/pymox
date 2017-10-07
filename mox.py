@@ -916,9 +916,10 @@ class MethodSignatureChecker(object):
     except TypeError:
       raise ValueError('Could not get argument specification for %r'
                        % (method,))
-    if inspect.ismethod(method):
-      self._args = self._args[1:]  # Skip 'self'.
     self._method = method
+    if inspect.ismethod(self._method) or ('.' in
+        repr(self._method) and self._args[0] == 'self'):
+      self._args = self._args[1:]  # Skip 'self'.
     self._instance = None  # May contain the instance this is bound to.
 
     self._has_varargs = varargs is not None
@@ -972,7 +973,8 @@ class MethodSignatureChecker(object):
     #
     # NOTE: If a Func() comparator is used, and the signature is not
     # correct, this will cause extra executions of the function.
-    if inspect.ismethod(self._method):
+    if inspect.ismethod(self._method) or ('.' in
+        repr(self._method) and self._args[0] == 'self'):
       # The extra param accounts for the bound instance.
       if len(params) > len(self._required_args):
         expected = getattr(self._method, 'im_class', None)
