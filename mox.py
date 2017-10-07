@@ -485,6 +485,15 @@ class MockAnything:
     else:
       return '<MockAnything instance>'
 
+  def __str__(self):
+    return self._CreateMockMethod('__str__')()
+
+  def __call__(self, *args, **kwargs):
+    return self._CreateMockMethod('__call__')(*args, **kwargs)
+
+  def __getitem__(self, i):
+    return self._CreateMockMethod('__getitem__')(i)
+
   def __getattr__(self, method_name):
     """Intercept method calls on this object.
 
