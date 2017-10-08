@@ -124,7 +124,10 @@ try:
   class MyDictABC(object):
     __metaclass__ = abc.ABCMeta
 
-  MyDictABC.register(dict)
+  try:
+    MyDictABC.register(dict)
+  except AttributeError:
+    pass
 
   class CallableSubclassOfMyDictABC(MyDictABC):
 
@@ -133,7 +136,7 @@ try:
 
     def __getitem__(self, key, default=None):
       return 'Not mock'
-except (ImportError, AttributeError):
+except ImportError:
   pass  # Python 2.5 or earlier
 
 
