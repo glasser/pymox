@@ -825,6 +825,11 @@ class MockObject(MockAnything, object):
 
     # Verify the class we are mocking is callable.
     callable = hasattr(self._class_to_mock, '__call__')
+    # callable = callable and str(
+    #     type(self._class_to_mock.__call__)) not in [
+    #         "<class 'method-wrapper'>",  # python 3
+    #         "<type 'method-wrapper'>"  # python 2
+    #     ]
     if not callable:
       raise TypeError('Not callable')
 
@@ -982,11 +987,21 @@ class MethodSignatureChecker(object):
     #
     # NOTE: If a Func() comparator is used, and the signature is not
     # correct, this will cause extra executions of the function.
-    if inspect.ismethod(self._method) or ('.' in
-        repr(self._method) and self._args and self._args[0] == 'self'):
+    # NOTE: '.' in repr(self._method) is very bad way to check if it's a bound
+    # method. Improve it as soon as possible.
+    if inspect.ismethod(self._method) or '.' in repr(self._method):
       # The extra param accounts for the bound instance.
       if len(params) > len(self._required_args):
         expected = getattr(self._method, 'im_class', None)
+        if not expected:
+          search = re.search(
+            '<(function|method) (?P<class>\w+)\.\w+ at \w+>',
+            str(repr(self._method)))
+          if search:
+            class_ = search.group('class')
+            members = dict(inspect.getmembers(self._method))
+            expected = members.get(class_, members.get('__globals__').get(
+                class_, None))
 
         # Check if the param is an instance of the expected class,
         # or check equality (useful for checking Comparators).
