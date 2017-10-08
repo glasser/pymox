@@ -1147,10 +1147,11 @@ class MockMethod(object):
     raise TypeError('MockMethod cannot be iterated. '
                     'Did you remember to put your mocks in replay mode?')
 
-  def next(self):
+  def __next__(self):
     """Raise a TypeError with a helpful message."""
     raise TypeError('MockMethod cannot be iterated. '
                     'Did you remember to put your mocks in replay mode?')
+  next = __next__
 
   def _PopNextMethod(self):
     """Pop the next method from our call queue."""
