@@ -932,7 +932,7 @@ class MethodSignatureChecker(object):
                        % (method,))
     self._method = method
     if inspect.ismethod(self._method) or ('.' in
-        repr(self._method) and self._args and self._args[0] == 'self'):
+        repr(self._method)) or (self._args and self._args[0] == 'self'):
       self._args = self._args[1:]  # Skip 'self'.
     self._instance = None  # May contain the instance this is bound to.
 
