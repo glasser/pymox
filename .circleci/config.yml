@@ -15,7 +15,7 @@ jobs:
           - v1-dependencies-
       - run:
           command: |
-            sudo pip install codecov==1.6.3
+            sudo pip install codecov==1.6.3 six
             sudo pip install tox tox-pyenv
       - run:
           command: |
