@@ -34,7 +34,7 @@ classifier_list = [c for c in classifiers.split("\n") if c]
 
 setup(name='pymox',
       version=__version__,
-      py_modules=['mox', 'stubout'],
+      py_modules=['mox', 'stubout', '__version__'],
       url='http://pymox.rtfd.io',
       maintainer='pymox maintainers',
       maintainer_email='mox-discuss@googlegroups.com',
