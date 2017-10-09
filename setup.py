@@ -1,4 +1,3 @@
-#!/usr/bin/python2.4
 #
 # Copyright 2008 Google Inc.
 #
@@ -16,14 +15,34 @@
 
 from distutils.core import setup
 
-setup(name='mox',
-      version='0.5.3',
+from mox import __version__
+
+classifiers = """
+Environment :: Console
+Intended Audience :: Developers
+License :: OSI Approved :: Apache Software License
+Operating System :: OS Independent
+Programming Language :: Python :: 2.7
+Programming Language :: Python :: 3.3
+Programming Language :: Python :: 3.4
+Programming Language :: Python :: 3.5
+Topic :: Software Development :: Quality Assurance
+Topic :: Software Development :: Testing
+"""
+
+classifier_list = [c for c in classifiers.split("\n") if c]
+
+setup(name='pymox',
+      version=__version__,
       py_modules=['mox', 'stubout'],
-      url='http://code.google.com/p/pymox/',
+      url='http://pymox.rtfd.io',
       maintainer='pymox maintainers',
       maintainer_email='mox-discuss@googlegroups.com',
       license='Apache License, Version 2.0',
       description='Mock object framework',
-      long_description='''Mox is a mock object framework for Python based on the
-Java mock object framework EasyMock.''',
+      classifiers=classifier_list,
+      include_package_data=True,
+      install_requires=['six'],
+      long_description='''Pymox is an open source mock object framework for Python.
+''',
       )

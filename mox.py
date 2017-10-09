@@ -61,6 +61,8 @@ Suggested usage / workflow:
   my_mox.VerifyAll()
 """
 
+__version__ = '0.7.0'
+
 try:
   import abc
 except ImportError:
