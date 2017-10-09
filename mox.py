@@ -2106,7 +2106,6 @@ class MultipleTimesGroup(MethodGroup):
 
 class MoxMetaTestBase(type):
   """Metaclass to add mox cleanup and verification to every test.
-
   As the mox unit testing class is being constructed (MoxTestBase or a
   subclass), this metaclass will modify all test functions to call the
   CleanUpMox method of the test class after they finish. This means that
@@ -2115,7 +2114,6 @@ class MoxMetaTestBase(type):
   """
 
   def __init__(cls, name, bases, d):
-    super(MoxMetaTestBase, cls).__init__(name, bases, d)
     type.__init__(cls, name, bases, d)
 
     # also get all the attributes from the base classes to account
@@ -2123,27 +2121,21 @@ class MoxMetaTestBase(type):
     for base in bases:
       for attr_name in dir(base):
         if attr_name not in d:
-          try:
-            attr_value = getattr(base, attr_name)
-          except AttributeValue:
-            continue
-          d[attr_name] = attr_value
+          d[attr_name] = getattr(base, attr_name)
 
     for func_name, func in d.items():
       if func_name.startswith('test') and callable(func):
+
         setattr(cls, func_name, MoxMetaTestBase.CleanUpTest(cls, func))
 
   @staticmethod
   def CleanUpTest(cls, func):
     """Adds Mox cleanup code to any MoxTestBase method.
-
     Always unsets stubs after a test. Will verify all mocks for tests that
     otherwise pass.
-
     Args:
       cls: MoxTestBase or subclass; the class whose test method we are altering.
       func: method; the method of the MoxTestBase test class we wish to alter.
-
     Returns:
       The modified method.
     """
@@ -2172,17 +2164,17 @@ class MoxMetaTestBase(type):
     return new_method
 
 
-class MoxTestBase(unittest.TestCase):
-  """Convenience test class to make stubbing easier.
+_MoxTestBase = MoxMetaTestBase('_MoxTestBase', (unittest.TestCase, ), {})
 
+
+class MoxTestBase(_MoxTestBase):
+  """Convenience test class to make stubbing easier.
   Sets up a "mox" attribute which is an instance of Mox (any mox tests will
   want this), and a "stubs" attribute that is an instance of StubOutForTesting
   (needed at times). Also automatically unsets any stubs and verifies that all
   mock methods have been called at the end of each test, eliminating boilerplate
   code.
   """
-
-  __metaclass__ = MoxMetaTestBase
 
   def setUp(self):
     super(MoxTestBase, self).setUp()
