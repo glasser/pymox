@@ -1343,7 +1343,11 @@ class MoxTest(unittest.TestCase):
 
   def testCallOnNonCallableObject(self):
     """Test that you cannot call a non-callable object."""
-    mock_obj = self.mox.CreateMock(TestClass)
+    class NonCallable(object):
+      pass
+    noncallable = NonCallable()
+    self.assertNotIn('__call__', dir(noncallable))
+    mock_obj = self.mox.CreateMock(noncallable)
     self.assertRaises(TypeError, mock_obj)
 
   def testCallableObjectWithBadCall(self):
