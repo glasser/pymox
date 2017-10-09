@@ -355,7 +355,9 @@ class Mox(object):
       raise TypeError('Cannot mock a MockAnything! Did you remember to '
                       'call UnsetStubs in your previous test?')
 
-    if attr_type in self._USE_MOCK_OBJECT and not use_mock_anything:
+    if (attr_type in self._USE_MOCK_OBJECT or
+            isinstance(attr_to_replace, object) or
+            inspect.isclass(attr_to_replace)) and not use_mock_anything:
       stub = self.CreateMock(attr_to_replace)
     else:
       stub = self.CreateMockAnything(description='Stub for %s' % attr_to_replace)
