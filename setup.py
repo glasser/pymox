@@ -15,7 +15,7 @@
 
 from distutils.core import setup
 
-from mox import __version__
+from __version__ import __version__
 
 classifiers = """
 Environment :: Console
