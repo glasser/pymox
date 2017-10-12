@@ -2362,6 +2362,10 @@ class MoxTestBaseTest(unittest.TestCase):
         self._CreateTest('testHasStubs')
         self._VerifySuccess()
 
+  def testRaisesWithStatement(self):
+    self._CreateTest('testRaisesWithStatement')
+    self._VerifySuccess()
+
     def testStubsNoMocks(self):
         """Let testHasStubs() unset the stubs by itself."""
         self._CreateTest('testHasStubs')

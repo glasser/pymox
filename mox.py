@@ -466,7 +466,7 @@ def Reset(*args):
         mock._Reset()
 
 
-class MockAnything:
+class MockAnything(object):
     """A mock that can be used to mock anything.
 
     This is helpful for mocking classes that do not provide a public interface.
@@ -607,7 +607,7 @@ class MockAnything:
         self._replay_mode = False
 
 
-class MockObject(MockAnything, object):
+class MockObject(MockAnything):
     """A mock object that simulates the public/protected interface of a class.
     """
 
@@ -2176,6 +2176,10 @@ class MoxMetaTestBase(type):
     """
 
     def __init__(cls, name, bases, d):
+    if six.PY3:
+      super().__init__(name, bases, d)
+    else:
+      super(MoxMetaTestBase, cls).__init__(name, bases, d)
         type.__init__(cls, name, bases, d)
 
         # also get all the attributes from the base classes to account
@@ -2183,7 +2187,10 @@ class MoxMetaTestBase(type):
         for base in bases:
             for attr_name in dir(base):
                 if attr_name not in d:
-                    d[attr_name] = getattr(base, attr_name)
+          try:
+              d[attr_name] = getattr(base, attr_name)
+          except AttributeError:
+              continue
 
         for func_name, func in d.items():
             if func_name.startswith('test') and callable(func):
