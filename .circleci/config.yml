@@ -16,7 +16,7 @@ jobs:
       - run:
           command: |
             sudo pip install codecov==1.6.3 six
-            sudo pip install tox tox-pyenv
+            sudo pip install tox tox-pyenv flake8
       - run:
           command: |
             curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
@@ -37,6 +37,7 @@ jobs:
       - run:
           command: |
             source ~/.bash_profile
+            flake8
             tox
       - store_artifacts:
           path: test-reports

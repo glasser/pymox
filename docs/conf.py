@@ -18,13 +18,15 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from recommonmark.parser import CommonMarkParser
 
+sys.path.insert(
+    0,
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+)
 
 # -- General configuration ------------------------------------------------
 #
-from recommonmark.parser import CommonMarkParser
-
 
 source_parsers = {
     '.md': CommonMarkParser,
@@ -82,7 +84,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -90,6 +91,7 @@ todo_include_todos = False
 #
 if not os.environ.get('READTHEDOCS', None):
     import sphinx_rtd_theme
+
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
@@ -119,12 +121,10 @@ html_sidebars = {
     ]
 }
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pymoxdoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -154,7 +154,6 @@ latex_documents = [
      u'Ivan Neto', 'manual'),
 ]
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
@@ -163,7 +162,6 @@ man_pages = [
     (master_doc, 'pymox', u'pymox Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
