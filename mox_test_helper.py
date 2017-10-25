@@ -85,15 +85,15 @@ class ExampleMoxTest(mox.MoxTestBase, ExampleMoxTestMixin):
         os.listdir(self.DIR_PATH)
         self.assertEqual([self.DIR_PATH], listdir_list)
 
-  def testRaisesWithStatement(self):
-    self.mox.StubOutWithMock(CallableClass, 'decision')
+    def testRaisesWithStatement(self):
+        self.mox.StubOutWithMock(CallableClass, 'decision')
 
-    CallableClass.decision().AndReturn('raise')
+        CallableClass.decision().AndReturn('raise')
 
-    self.mox.ReplayAll()
-    with self.assertRaises(Exception):
-        call = CallableClass(1, 2)
-        call.conditional_function()
+        self.mox.ReplayAll()
+        with self.assertRaises(Exception):
+            call = CallableClass(1, 2)
+            call.conditional_function()
 
 
 class TestClassFromAnotherModule(object):
@@ -125,13 +125,13 @@ class CallableClass(object):
     def Value():
         return 'Not mock'
 
-  def decision(self):
-    return
+    def decision(self):
+        return
 
-  def conditional_function(self):
-    decision = self.decision()
-    if decision == 'raise':
-        raise Exception('exception raised')
+    def conditional_function(self):
+        decision = self.decision()
+        if decision == 'raise':
+            raise Exception('exception raised')
 
 
 try:
