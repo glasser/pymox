@@ -2180,10 +2180,10 @@ class MoxMetaTestBase(type):
     """
 
     def __init__(cls, name, bases, d):
-    if six.PY3:
-      super().__init__(name, bases, d)
-    else:
-      super(MoxMetaTestBase, cls).__init__(name, bases, d)
+        if six.PY3:  # pragma: nocover
+            super().__init__(name, bases, d)
+        else:
+            super(MoxMetaTestBase, cls).__init__(name, bases, d)
         # type.__init__(cls, name, bases, d)
 
         # also get all the attributes from the base classes to account
@@ -2191,10 +2191,10 @@ class MoxMetaTestBase(type):
         for base in bases:
             for attr_name in dir(base):
                 if attr_name not in d:
-          try:
-              d[attr_name] = getattr(base, attr_name)
-          except AttributeError:
-              continue
+                    try:  # pragma: nocover
+                        d[attr_name] = getattr(base, attr_name)
+                    except AttributeError:
+                        continue
 
         for func_name, func in d.items():
             if func_name.startswith('test') and callable(func):
