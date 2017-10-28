@@ -508,9 +508,6 @@ class MockAnything:
     def __getitem__(self, i):
         return self._CreateMockMethod('__getitem__')(i)
 
-    def __setitem__(self, key, value):
-        return self._CreateMockMethod('__setitem__')(key, value)
-
     def __getattr__(self, method_name):
         """Intercept method calls on this object.
 
