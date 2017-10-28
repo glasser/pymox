@@ -2022,6 +2022,28 @@ class MoxTest(unittest.TestCase):
         self.assertEquals('mock', actual_one)
         self.assertEquals('called mock', actual_two)
 
+    def testStubOutClassWithMetaClass(self):
+        self.mox.StubOutClassWithMocks(
+            mox_test_helper, 'ChildClassWithMetaClass')
+
+        mock_one = mox_test_helper.ChildClassWithMetaClass(kw=1)
+        mock_one.Value().AndReturn('mock')
+
+        self.mox.ReplayAll()
+
+        one = mox_test_helper.ChildClassWithMetaClass(kw=1)
+        actual_one = one.Value()
+
+        self.mox.VerifyAll()
+        self.mox.UnsetStubs()
+
+        # Verify the correct mocks were returned
+        self.assertEquals(mock_one, one)
+
+        # Verify
+        self.assertEquals('mock', actual_one)
+        self.assertEquals('meta', one.x)
+
     try:
         import abc
         # I'd use the unittest skipping decorators for this but I want to

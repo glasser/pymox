@@ -26,7 +26,7 @@ See mox_test.MoxTestBaseTest for how this class is actually used.
 """
 
 import os
-
+import six
 import mox
 
 
@@ -113,6 +113,29 @@ class ChildClassFromAnotherModule(TestClassFromAnotherModule):
 
     def __init__(self):
         TestClassFromAnotherModule.__init__(self)
+
+
+class MetaClassFromAnotherModule(type):
+
+    def __new__(mcs, name, bases, attrs):
+        new_class = super(MetaClassFromAnotherModule, mcs).__new__(
+            mcs, name, bases, attrs)
+
+        new_class.x = 'meta'
+        return new_class
+
+
+class ChildClassWithMetaClass(six.with_metaclass(MetaClassFromAnotherModule,
+                              TestClassFromAnotherModule)):
+    """A child class with MetaClassFromAnotherModule.
+
+    Used to test corner cases usually only happening with meta classes.
+    """
+    def Value():
+        return 'Not mock'
+
+    def __init__(self, kw=None):
+        super(ChildClassWithMetaClass, self).__init__()
 
 
 class CallableClass(object):
