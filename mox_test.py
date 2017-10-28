@@ -1016,8 +1016,10 @@ class MockObjectTest(unittest.TestCase):
     def testAccessClassVariables(self):
         """Class variables should be accessible through the mock."""
         self.assert_('SOME_CLASS_VAR' in self.mock_object._known_vars)
+        self.assert_('SOME_CLASS_SET' in self.mock_object._known_vars)
         self.assert_('_PROTECTED_CLASS_VAR' in self.mock_object._known_vars)
         self.assertEquals('test_value', self.mock_object.SOME_CLASS_VAR)
+        self.assertEquals({'a', 'b', 'c'}, self.mock_object.SOME_CLASS_SET)
 
     def testEquals(self):
         """A mock should be able to compare itself to another object."""
@@ -1942,6 +1944,22 @@ class MoxTest(unittest.TestCase):
         self.mox.VerifyAll()
         self.mox.UnsetStubs()
 
+    def testStubout_Method_ExplicitContains_For_Set(self):
+        """Test that explicit __contains__() for a set gets mocked with
+        success."""
+        self.mox.StubOutWithMock(TestClass, 'SOME_CLASS_SET')
+        TestClass.SOME_CLASS_SET.__contains__('x').AndReturn(True)
+
+        dummy = TestClass()
+
+        self.mox.ReplayAll()
+
+        result = 'x' in dummy.SOME_CLASS_SET
+
+        self.mox.VerifyAll()
+
+        self.assertTrue(result)
+
     def testStubOut_SignatureMatching_init_(self):
         self.mox.StubOutWithMock(mox_test_helper.ExampleClass, '__init__')
         mox_test_helper.ExampleClass.__init__(mox.IgnoreArg())
@@ -2519,6 +2537,7 @@ class MoxTestDontMockProperties(MoxTestBaseTest):
 class TestClass:
     """This class is used only for testing the mock framework"""
 
+    SOME_CLASS_SET = {'a', 'b', 'c'}
     SOME_CLASS_VAR = "test_value"
     _PROTECTED_CLASS_VAR = "protected value"
 
