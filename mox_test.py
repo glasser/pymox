@@ -921,6 +921,24 @@ class MethodCheckerTest(unittest.TestCase):
         method(c=3, b=2, a=1)
         method(1, 2, c=3)
 
+    def testFarAwayClassWithInstantiatedObject(self):
+        obj = FarAwayClass()
+        method = mox.MockMethod('distantMethod', [], [], False,
+                                obj.distantMethod)
+        self.assertRaises(AttributeError, method, 1)
+        self.assertRaises(AttributeError, method, a=1)
+        self.assertRaises(AttributeError, method, b=1)
+        self.assertRaises(AttributeError, method, 1, 2)
+        self.assertRaises(AttributeError, method, 1, b=2)
+        self.assertRaises(AttributeError, method, a=1, b=2)
+        self.assertRaises(AttributeError, method, b=2, a=1)
+        self.assertRaises(AttributeError, method, b=2, c=3)
+        self.assertRaises(AttributeError, method, a=1, b=2, c=3)
+        self.assertRaises(AttributeError, method, 1, 2, 3)
+        self.assertRaises(AttributeError, method, 1, 2, 3, 4)
+        self.assertRaises(AttributeError, method, 3, a=1, b=2)
+        method()
+
 
 class CheckCallTestClass(object):
     def NoParameters(self):

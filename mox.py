@@ -1044,8 +1044,26 @@ class MethodSignatureChecker(object):
                         class_ = search.group('class')
                         members = dict(inspect.getmembers(self._method))
                         expected = members.get(
-                            class_, members.get('__globals__').get(
-                                class_, None))
+                            class_, members.get('__globals__', {})
+                        ).get(class_, None)
+                if not expected:
+                    search = re.search(
+                        '<bound method (?P<class>\w+)\.\w+( of <(?P<class2>'
+                        '[A-Za-z. 0-9_]+?))( object at [A-Za-z0-9]+>)?>',
+                        str(repr(self._method))
+                    )
+
+                    if search:
+                        for _, class_ in search.groupdict().items():
+                            members = dict(inspect.getmembers(self._method))
+                            expected = members.get(
+                                class_, members.get('__globals__', {})
+                            ).get(class_, None)
+                            if expected:
+                                break
+                if not expected and six.PY3:
+                    expected = dict(
+                        inspect.getmembers(self._method))['__self__'].__class__
 
                 # Check if the param is an instance of the expected class,
                 # or check equality (useful for checking Comparators).
