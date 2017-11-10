@@ -25,6 +25,8 @@ import mox
 
 import mox_test_helper
 
+from test_helpers.subpackage.faraway import FarAwayClass
+
 OS_LISTDIR = mox_test_helper.os.listdir
 
 
@@ -951,6 +953,17 @@ class MockObjectTest(unittest.TestCase):
 
     def setUp(self):
         self.mock_object = mox.MockObject(TestClass)
+
+    def testDescription(self):
+        self.assertEqual(self.mock_object._description, 'TestClass')
+
+        mock_object = mox.MockObject(FarAwayClass.distantMethod)
+        self.assertEqual(
+            mock_object._description, 'FarAwayClass.distantMethod')
+
+        mock_object = mox.MockObject(mox_test_helper.MyTestFunction)
+        self.assertEqual(
+            mock_object._description, 'function')
 
     def testSetupModeWithValidCall(self):
         """Verify the mock object properly mocks a basic method call."""

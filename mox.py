@@ -643,9 +643,17 @@ class MockObject(MockAnything, object):
             if inspect.isclass(self._class_to_mock):
                 self._description = class_to_mock.__name__
             else:
-                self._description = type(class_to_mock).__name__
+                search = re.search(
+                    '<(function|(unbound )?method) (?P<class>\w+)\.(?P<method>'
+                    '\w+)( at \w+)?>',
+                    str(repr(class_to_mock)))
+                self._description = '{}.{}'.format(
+                    search.group('class'), search.group('method'))
         except Exception:
-            pass
+            try:
+                self._description = type(class_to_mock).__name__
+            except Exception:
+                pass
 
         for method in dir(class_to_mock):
             try:
