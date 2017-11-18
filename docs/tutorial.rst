@@ -502,6 +502,7 @@ And the manager now looks like this:
 .. highlight:: python
 
 ::
+
     def CreatePerson(self, person, user):
         """Create a Person"""
 
