@@ -294,18 +294,43 @@ Side Effects
 
 Sometimes the behavior of the code you are testing is dependent on some side effect of the object you are mocking. Some examples of when this is the case are when real object might treat some object as an "out" or "in/out" parameter or the real object is meant to change some shared resource that modifies the behavior of your testing unit. It is possible to simulate these side effects by using WithSideEffects.
 
-``` # This function will be passed to WithSideEffects; when # GetWaitingMessages is called on the mock, this function will be # called with the same arguments as GetWaitingMessages. def add_messages(message_list): message_list += ['message 1', 'message 2']
+.. highlight:: python
 
-message_appender = mox.MockObject(PendingMessages) message_appender.GetWaitingMessages(['message 0']).WithSideEffects(add_messages).AndReturn(2) mox.Replay(message_appender)
+::
 
-messages = ['message 0'] new_messages = message_appender.GetWaitingMessages(messages) mox.Verify(message_appender) assertEquals(['message 0', 'message 1', 'message 2'], messages) ```
+    # This function will be passed to WithSideEffects; when
+    # GetWaitingMessages is called on the mock, this function will be
+    # called with the same arguments as GetWaitingMessages.
+
+    def add_messages(message_list):
+        message_list += ['message 1', 'message 2']
+        message_appender = mox.MockObject(PendingMessages)
+        message_appender.GetWaitingMessages(
+            ['message 0']).WithSideEffects(add_messages).AndReturn(2)
+
+        mox.Replay(message_appender)
+        messages = ['message 0']
+        new_messages = message_appender.GetWaitingMessages(messages)
+        mox.Verify(message_appender)
+
+        assertEquals(['message 0', 'message 1', 'message 2'], messages)
 
 Callbacks
 ~~~~~~~~~
 
-Mocking a callback should be pretty straight forward. ``` m = mox.Mox() mock_callback = m.CreateMockAnything() # MockAnything is callable test_object.SetCallback(mock_callback) mock_callback(42) # Expect this to be called.
+Mocking a callback should be pretty straight forward.
 
-m.ReplayAll() test_object.DoStuff() # Which in turn calls mock_callback... m.VerifyAll() ```
+
+.. highlight:: python
+
+::
+
+    m = mox.Mox()
+    mock_callback = m.CreateMockAnything() # MockAnything is callable
+    test_object.SetCallback(mock_callback)
+    mock_callback(42) # Expect this to be called.
+    m.ReplayAll()
+    test_object.DoStuff() # Which in turn calls mock_callback... m.VerifyAll()
 
 Misc
 ~~~~
@@ -350,38 +375,61 @@ Let's say you have this class, and you'd like to test it:
 .. highlight:: python
 
 ::
-``` class PersonManager(object):
 
-def init(self, person_dao): self._dao = person_dao
+    class PersonManager(object):
 
-def CreatePerson(self, person, user): """Create a Person"""
+        def init(self, person_dao): self._dao = person_dao
 
-if user != 'stevepm':
-  raise Exception('no way, jose')
+        def CreatePerson(self, person, user): """Create a Person"""
 
-try:
-  self._dao.InsertPerson(person)
-except PersistenceException, e:
-  raise BusinessException('error talking to db', e)
-```
+        if user != 'stevepm':
+            raise Exception('no way, jose')
+
+        try:
+            self._dao.InsertPerson(person)
+        except PersistenceException, e:
+            raise BusinessException('error talking to db', e)
+
 
 And you have the class PersonManager depends on:
 
-``` class PersonDao(object):
+.. highlight:: python
 
-def init(self, db): self._db = db
+::
 
-def InsertPerson(self, person): self._db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person) ```
+    class PersonDao(object):
+
+        def init(self, db): self._db = db
+
+        def InsertPerson(self, person):
+            self._db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
 
 So now you can write the test:
 
-``` class PersonManagerTest(unittest.TestCase):
+.. highlight:: python
 
-def setUp(self): self.mox = mox.Mox() self.dao = self.mox.CreateMock(PersonDao) self.manager = PersonManager(self.dao)
+::
 
-def testCreatePersonWithAccess(self): self.dao.InsertPerson(test_person) self.mox.ReplayAll() self.manager.CreatePerson(test_person, 'stevepm') self.mox.VerifyAll()
+    class PersonManagerTest(unittest.TestCase):
 
-def testCreatePersonWithDbException(self): self.dao.InsertPerson(test_person).AndRaise(PersistenceException('Snakes!')) self.mox.ReplayAll() self.assertRaises(BusinessException, self.manager.CreatePerson, test_person, 'stevepm') self.mox.VerifyAll() ```
+        def setUp(self):
+            self.mox = mox.Mox()
+            self.dao = self.mox.CreateMock(PersonDao)
+            self.manager = PersonManager(self.dao)
+
+        def testCreatePersonWithAccess(self):
+            self.dao.InsertPerson(test_person)
+            self.mox.ReplayAll()
+            self.manager.CreatePerson(test_person, 'stevepm')
+            self.mox.VerifyAll()
+
+        def testCreatePersonWithDbException(self):
+            self.dao.InsertPerson(test_person).AndRaise(
+                PersistenceException('Snakes!'))
+            self.mox.ReplayAll()
+            self.assertRaises(
+                BusinessException, self.manager.CreatePerson, test_person, 'stevepm')
+            self.mox.VerifyAll()
 
 Pretty cool, huh?
 
@@ -389,31 +437,55 @@ Extending The Basic Example
 
 Now let's say you want to have your DAO return the new primary key for the person, and your manager class would like to verify that the primary key is greater than some number. Who knows, it's a toy example! :) You would change your code as follows:
 
-``` def CreatePerson(self, person, user): """Creates a Person."""
+.. highlight:: python
+
+::
+
+    def CreatePerson(self, person, user):
+        """Creates a Person."""
+        if user != 'stevepm':
+            raise Exception('no way, jose')
+
+        try:
+            primary_key = self._dao.InsertPerson(person)
+        except PersistenceException e:
+            raise BusinessException('error talking to db', e)
+
+        if primary_key < MIN_PRIMARY_KEY_VALUE:
+            self._dao.DeletePerson(primary_key)
+            raise BusinessException('primary key too small')
+
+    def InsertPerson(self, person):
+        return db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
+
+    def DeletePerson(self, person_id):
+        db.Execute('DELETE FROM Person WHERE ...' % person_id)
+
+Now you can modify your test:
 
 .. highlight:: python
 
 ::
-if user != 'stevepm':
-  raise Exception('no way, jose')
 
-try:
-  primary_key = self._dao.InsertPerson(person)
-except PersistenceException e:
-  raise BusinessException('error talking to db', e)
+    def testCreatePersonWithAccess(self):
+        self.dao.InsertPerson(test_person).AndReturn(HUGE_PRIMARY_KEY)
+        self.mox.ReplayAll()
+        self.manager.CreatePerson(test_person, 'stevepm')
+        self.mox.VerifyAll()
 
-if primary_key < MIN_PRIMARY_KEY_VALUE:
-  self._dao.DeletePerson(primary_key)
-  raise BusinessException('primary key too small')
-```
+And add the new test:
 
-``` def InsertPerson(self, person): return db.Execute('INSERT INTO Person(name) VALUES ("%s")' % person)
+.. highlight:: python
 
-def DeletePerson(self, person_id): db.Execute('DELETE FROM Person WHERE ...' % person_id) ```
+::
 
-Now you can modify your test: def testCreatePersonWithAccess(self): self.dao.InsertPerson(test_person).AndReturn(HUGE_PRIMARY_KEY) self.mox.ReplayAll() self.manager.CreatePerson(test_person, 'stevepm') self.mox.VerifyAll()
-
-And add the new test: def testCreatePersonWithSmallPrimaryKey(self): self.dao.InsertPerson(test_person).AndReturn(TINY_PRIMARY_KEY) self.dao.DeletePerson(TINY_PRIMARY_KEY) self.mox.ReplayAll() self.assertRaises(BuisnessException, self.manager.CreatePerson, test_person, 'stevepm') self.mox.VerifyAll()
+    def testCreatePersonWithSmallPrimaryKey(self):
+    self.dao.InsertPerson(test_person).AndReturn(TINY_PRIMARY_KEY)
+    self.dao.DeletePerson(TINY_PRIMARY_KEY)
+    self.mox.ReplayAll()
+    self.assertRaises(
+        BuisnessException, self.manager.CreatePerson, test_person, 'stevepm')
+    self.mox.VerifyAll()
 
 Complicating Things Even More...
 
@@ -422,26 +494,30 @@ Ugh, now let's say it is up to your manager to pass some audit trail object to t
 .. highlight:: python
 
 ::
-def InsertPerson(self, person, audit_trail_obj):
+
+    def InsertPerson(self, person, audit_trail_obj):
 
 And the manager now looks like this:
 
-``` def CreatePerson(self, person, user): """Create a Person"""
+.. highlight:: python
 
-if user != 'stevepm':
-  raise Exception('no way, jose')
+::
+    def CreatePerson(self, person, user):
+        """Create a Person"""
 
-audit_record = AuditRecord(user)
+    if user != 'stevepm':
+        raise Exception('no way, jose')
 
-try:
-  primary_key = self._dao.InsertPerson(person, audit_record)
-except PersistenceException e:
-  raise BusinessException('error talking to db', e)
+        audit_record = AuditRecord(user)
 
-if primary_key < MIN_PRIMARY_KEY_VALUE:
-  self._dao.DeletePerson(primary_key)
-  raise BusinessException('primary key too small')
-```
+        try:
+            primary_key = self._dao.InsertPerson(person, audit_record)
+        except PersistenceException e:
+            raise BusinessException('error talking to db', e)
+
+        if primary_key < MIN_PRIMARY_KEY_VALUE:
+            self._dao.DeletePerson(primary_key)
+            raise BusinessException('primary key too small')
 
 Oh now, how do we setup our expected call to dao.InsertPerson now that a parameter is out of our control?! Have no fear, Mox is here! There are Comparators that can be used to check the equivalency of method parameters. You can even mix and match then with real parameters, as you'll see below.
 
@@ -449,9 +525,19 @@ def testCreatePersonWithAccess(self): self.dao.InsertPerson(test_person, IsA(Aud
 
 There are all kinds of other comparators for simple parameter checking. If you have complex logic to check the value, you can even use a callable to verify it.
 
-``` def testCreatePersonWithAccess(self): self.dao.InsertPerson(test_person, Func(ValidAuditRecord)).AndReturn(HUGE_PRIMARY_KEY) self.mox.ReplayAll() self.manager.CreatePerson(test_person, 'stevepm') self.mox.VerifyAll()
+.. highlight:: python
 
-def ValidAuditRecord(audit_record): return (audit_record.user() == 'stevepm' and audit_record.type() == 'insert') ```
+::
+
+    def testCreatePersonWithAccess(self):
+        self.dao.InsertPerson(
+            test_person, Func(ValidAuditRecord)).AndReturn(HUGE_PRIMARY_KEY)
+        self.mox.ReplayAll()
+        self.manager.CreatePerson(test_person, 'stevepm')
+        self.mox.VerifyAll()
+
+    def ValidAuditRecord(audit_record):
+        return (audit_record.user() == 'stevepm' and audit_record.type() == 'insert')
 
 
 Introduction
@@ -462,121 +548,167 @@ Set up your Mox test classes in a sane way
 
 Note: many other recipes assume you've done this.
 
-``` def setUp(self): self.mox = mox.Mox()
+.. highlight:: python
 
-def tearDown(self): self.mox.UnsetStubs() ```
+::
+
+    def setUp(self):
+        self.mox = mox.Mox()
+
+    def tearDown(self):
+        self.mox.UnsetStubs()
 
 Stub out a method called from a constructor in the same class
 
-TODO(damien): Write a public example here.
+.. highlight:: python
+
+::
+
+    TODO: Write a public example here.
 
 Stub out a static method in the class under test
 
-``` def testFoo(self):
+.. highlight:: python
 
-orig_method = module.class.StaticMethod
+::
 
-static_stub = staticmethod(lambda *args, **kwargs: None)
-module.class.StaticMethod = static_stub
+    def testFoo(self):
 
-self.mox.ReplayAll()
+        orig_method = module.class.StaticMethod
 
-...
+        static_stub = staticmethod(lambda *args, **kwargs: None)
+        module.class.StaticMethod = static_stub
 
-self.mox.VerifyAll()
+        self.mox.ReplayAll()
 
-module.class.StaticMethod = orig_method
-```
+        ...
+
+        self.mox.VerifyAll()
+
+        module.class.StaticMethod = orig_method
 
 Mock a module-level function in a different module
 
-``` def testFoo(self):
+.. highlight:: python
 
-self.mox.StubOutWithMock(module_to_mock, 'FunctionToMock')
-module_to_mock.FunctionToMock().AndReturn(foo)
+::
 
-self.mox.ReplayAll()
-...
-self.mox.VerifyAll()
-```
+    def testFoo(self):
+
+    self.mox.StubOutWithMock(module_to_mock, 'FunctionToMock')
+    module_to_mock.FunctionToMock().AndReturn(foo)
+
+    self.mox.ReplayAll()
+    ...
+    self.mox.VerifyAll()
+
 
 Stub out a class in a different module
 
-TODO(damien): Write a public example here.
+.. highlight:: python
+
+::
+
+    TODO: Write a public example here.
 
 Mock a method in the class under test.
 
-TODO(damien): Investigate this further. Maybe stubbing out call would help?
+TODO: Investigate this further. Maybe stubbing out call would help?
 
-``` def testFoo(self):
+.. highlight:: python
 
-# Note the difference: we instantiate the class *before* Replaying.
-foo_instance = module_under_test.ClassUnderTest()
-self.mox.StubOutWithMock(foo_instance, 'MethodToStub')
-foo_instance.MethodToStub().AndReturn('foo')
+::
 
-...
+    def testFoo(self):
 
-self.mox.ReplayAll()
-...
-self.mox.VerifyAll()
-```
+        # Note the difference: we instantiate the class *before* Replaying.
+        foo_instance = module_under_test.ClassUnderTest()
+        self.mox.StubOutWithMock(foo_instance, 'MethodToStub')
+        foo_instance.MethodToStub().AndReturn('foo')
+
+        ...
+
+        self.mox.ReplayAll()
+        ...
+        self.mox.VerifyAll()
+
 
 Mock a generator in the class under test
 
-``` def testFoo(self):
+.. highlight:: python
 
-...
+::
 
-foo_instance = module_under_test.ClassUnderTest()
-self.mox.StubOutWithMock(foo_instance, 'GeneratorToStub')
+    def testFoo(self):
 
-mygen = (x for x in [1, 2, 3])
-foo_instance.MethodToStub(mox.IsA(object)).AndReturn(mygen)
+        ...
 
-...
+        foo_instance = module_under_test.ClassUnderTest()
+        self.mox.StubOutWithMock(foo_instance, 'GeneratorToStub')
 
-self.mox.ReplayAll()
+        mygen = (x for x in [1, 2, 3])
+        foo_instance.MethodToStub(mox.IsA(object)).AndReturn(mygen)
 
-...
+        ...
 
-self.mox.VerifyAll()
-```
+        self.mox.ReplayAll()
+
+        ...
+
+        self.mox.VerifyAll()
+        ```
 
 Mocking datetime.datetime.now
 
-``` import datetime import mox
+.. highlight:: python
 
-m = mox.Mox()
+::
 
-Stub out the datatime.datetime class.
+    import datetime import mox
 
-m.StubOutWithMock(datetime, 'datetime')
+    m = mox.Mox()
 
-Record a call to 'now', and have it return the value '1234'
+    Stub out the datatime.datetime class.
 
-datetime.datetime.now().AndReturn(1234)
+    m.StubOutWithMock(datetime, 'datetime')
 
-Set the mocks to replay mode
+    Record a call to 'now', and have it return the value '1234'
 
-m.ReplayAll()
+    datetime.datetime.now().AndReturn(1234)
 
-This will return '1234'
+    Set the mocks to replay mode
 
-datetime.datetime.now()
+    m.ReplayAll()
 
-Verify the time was actually checked.
+    This will return '1234'
 
-m.VerifyAll()
+    datetime.datetime.now()
+
+    Verify the time was actually checked.
+
+    m.VerifyAll()
 
 Return datetime.datetime to its default (non-mock) state.
 
-m.UnsetStubs() ```
+.. highlight:: python
+
+::
+
+    m.UnsetStubs()
 
 Alternatively, rewrite your code so that you can mock out datetime.now without Mox:
 
-``` def FunctionBeingTested(now=datetime.datetime.now): DoSomethingWith(now())
+.. highlight:: python
+
+::
+
+    def FunctionBeingTested(now=datetime.datetime.now): DoSomethingWith(now())
 
 in test code
 
-def MyNow(): return 1234 FunctionBeingTested(now=MyNow) ```
+
+.. highlight:: python
+
+::
+
+    def MyNow(): return 1234 FunctionBeingTested(now=MyNow)
