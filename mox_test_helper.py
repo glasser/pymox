@@ -26,6 +26,7 @@ See mox_test.MoxTestBaseTest for how this class is actually used.
 """
 
 import os
+import re
 import six
 import mox
 

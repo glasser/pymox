@@ -981,7 +981,7 @@ class MockObjectTest(unittest.TestCase):
 
         mock_object = mox.MockObject(mox_test_helper.MyTestFunction)
         self.assertEqual(
-            mock_object._description, 'function')
+            mock_object._description, '<function MyTestFunction>')
 
     def testSetupModeWithValidCall(self):
         """Verify the mock object properly mocks a basic method call."""
@@ -2224,6 +2224,17 @@ class MoxTest(unittest.TestCase):
         self.mox.UnsetStubs()
         self.failIf(isinstance(foo.obj, mox.MockObject))
 
+    def testStubOutReWorks(self):
+        self.mox.StubOutWithMock(re, 'search')
+
+        re.search('a', 'ivan').AndReturn('true')
+
+        self.mox.ReplayAll()
+        result = TestClass().reSearch()
+        self.mox.VerifyAll()
+
+        self.assertEqual(result, 'true')
+
     def testForgotReplayHelpfulMessage(self):
         """If there is an AttributeError on a MockMethod, give users a helpful
         msg."""
@@ -2649,6 +2660,9 @@ class TestClass:
 
     def __iter__(self):
         pass
+
+    def reSearch(self):
+        return re.search('a', 'ivan')
 
 
 class ChildClass(TestClass):

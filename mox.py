@@ -75,6 +75,8 @@ import unittest
 
 import stubout
 
+from re import search as re_search
+
 
 class Error(AssertionError):
     """Base exception for this module."""
@@ -643,12 +645,17 @@ class MockObject(MockAnything, object):
             if inspect.isclass(self._class_to_mock):
                 self._description = class_to_mock.__name__
             else:
-                search = re.search(
-                    '<(function|(unbound )?method) (?P<class>\w+)\.(?P<method>'
-                    '\w+)( at \w+)?>',
-                    str(repr(class_to_mock)))
-                self._description = '{}.{}'.format(
+                search_string = (
+                    '<(?P<extra>function|(unbound )?method) (?P<class>\w+)'
+                    '(?P<method>\.?\w*)( at \w+)?>')
+                search = re_search(search_string, str(repr(class_to_mock)))
+                self._description = '{}{}'.format(
                     search.group('class'), search.group('method'))
+
+                if (search.group('extra') == 'function' and not
+                        search.group('class') or not search.group('method')):
+                    self._description = '<function {}>'.format(
+                        self._description)
         except Exception:
             try:
                 self._description = type(class_to_mock).__name__
@@ -1037,7 +1044,7 @@ class MethodSignatureChecker(object):
             if len(params) > len(self._required_args):
                 expected = getattr(self._method, 'im_class', None)
                 if not expected:
-                    search = re.search(
+                    search = re_search(
                         '<(function|method) (?P<class>\w+)\.\w+ at \w+>',
                         str(repr(self._method)))
                     if search:
@@ -1047,7 +1054,7 @@ class MethodSignatureChecker(object):
                             class_, members.get('__globals__', {})
                         ).get(class_, None)
                 if not expected:
-                    search = re.search(
+                    search = re_search(
                         '<bound method (?P<class>\w+)\.\w+( of <(?P<class2>'
                         '[A-Za-z. 0-9_]+?))( object at [A-Za-z0-9]+>)?>',
                         str(repr(self._method))
