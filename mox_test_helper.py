@@ -197,6 +197,10 @@ class ExampleClass(object):
     def SpecialArgs(self, *args, **kwargs):
         pass
 
+    @classmethod
+    def ClassMethod(cls):
+        pass
+
 
 # This class is used to test stubbing out __init__ of a parent class.
 class ChildExampleClass(ExampleClass):

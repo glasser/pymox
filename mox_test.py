@@ -1364,6 +1364,28 @@ class MoxTest(unittest.TestCase):
         """Mox should create a mock object."""
         self.mox.CreateMock(TestClass)
 
+    def testCreateObjectUsingSimpleImportedModule(self):
+        """Mox should create a mock object for a class from a module imported
+        using a simple 'import module' statement"""
+        self.mox.CreateMock(mox_test_helper.ExampleClass)
+
+    def testCreateObjectUsingSimpleImportedModuleClassMethod(self):
+        """Mox should create a mock object for a class from a module imported
+        using a simple 'import module' statement"""
+        example_obj = self.mox.CreateMock(mox_test_helper.ExampleClass)
+
+        self.mox.StubOutWithMock(mox_test_helper.ExampleClass, 'ClassMethod')
+        mox_test_helper.ExampleClass.ClassMethod().AndReturn(example_obj)
+
+        def call_helper_class_method():
+            return mox_test_helper.ExampleClass.ClassMethod()
+
+        self.mox.ReplayAll()
+        expected_obj = call_helper_class_method()
+        self.mox.VerifyAll()
+
+        self.assertEqual(expected_obj, example_obj)
+
     def testCreateMockOfType(self):
         self.mox.CreateMock(type)
 

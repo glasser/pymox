@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import inspect
+import six
 
 
 class StubOutForTesting:
@@ -127,7 +128,10 @@ class StubOutForTesting:
             if isinstance(old_attribute, staticmethod):
                 old_child = staticmethod(old_child)
             elif isinstance(old_attribute, classmethod):
-                old_child = classmethod(old_child.im_func)
+                if six.PY2:
+                    old_child = classmethod(old_child.im_func)
+                else:
+                    old_child = classmethod(old_child.__func__)
 
         self.cache.append((parent, old_child, child_name))
         setattr(parent, child_name, new_child)
