@@ -2254,6 +2254,7 @@ class MoxTest(unittest.TestCase):
         self.mox.ReplayAll()
         result = TestClass().reSearch()
         self.mox.VerifyAll()
+        self.mox.UnsetStubs()
 
         self.assertEqual(result, 'true')
 
