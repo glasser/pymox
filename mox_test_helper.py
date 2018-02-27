@@ -201,6 +201,17 @@ class ExampleClass(object):
         pass
 
 
+class SpecialClass(object):
+
+    @classmethod
+    def ClassMethod(cls):
+        pass
+
+    @staticmethod
+    def StaticMethod():
+        pass
+
+
 # This class is used to test stubbing out __init__ of a parent class.
 class ChildExampleClass(ExampleClass):
     def __init__(self):

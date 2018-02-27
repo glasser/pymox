@@ -644,18 +644,32 @@ class MockObject(MockAnything, object):
         try:
             if inspect.isclass(self._class_to_mock):
                 self._description = class_to_mock.__name__
+            elif inspect.ismethod(self._class_to_mock):
+                if six.PY2:
+                    method_name = class_to_mock.im_func.__name__
+                    class_name = class_to_mock.im_class.__name__
+                else:
+                    method_name = class_to_mock.__func__.__name__
+                    class_name = class_to_mock.__self__.__class__.__name__
+                if class_name == 'type':
+                    class_name = class_to_mock.__self__.__name__
+                self._description = '{}.{}'.format(
+                    class_name, method_name)
             else:
                 search_string = (
-                    '<(?P<extra>function|(unbound )?method) (?P<class>\w+)'
-                    '(?P<method>\.?\w*)( at \w+)?>')
+                    '<(?P<extra>function|((un)?bound )?method) (?P<class>\w*)'
+                    '(\.(?P<method>\w*))?( at \w+)?>')
                 search = re_search(search_string, str(repr(class_to_mock)))
-                self._description = '{}{}'.format(
+
+                self._description = '{}.{}'.format(
                     search.group('class'), search.group('method'))
 
                 if (search.group('extra') == 'function' and not
                         search.group('class') or not search.group('method')):
-                    self._description = '<function {}>'.format(
-                        self._description)
+                    to_use = search.group('class') or search.group('method')
+                    if inspect.isfunction(self._class_to_mock):
+                        self._description = 'function {}.{}'.format(
+                            self._class_to_mock.__module__, to_use)
         except Exception:
             try:
                 self._description = type(class_to_mock).__name__
@@ -1055,8 +1069,9 @@ class MethodSignatureChecker(object):
                         ).get(class_, None)
                 if not expected:
                     search = re_search(
-                        '<bound method (?P<class>\w+)\.\w+( of <(?P<class2>'
-                        '[A-Za-z. 0-9_]+?))( object at [A-Za-z0-9]+>)?>',
+                        '<(?P<method>((un)?bound method ))(?P<class>\w+)'
+                        '\.\w+ of <?(?P<module>\w+\.)(?P<class2>\w+) object '
+                        'at [A-Za-z0-9]+>?>',
                         str(repr(self._method))
                     )
 

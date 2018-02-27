@@ -981,7 +981,77 @@ class MockObjectTest(unittest.TestCase):
 
         mock_object = mox.MockObject(mox_test_helper.MyTestFunction)
         self.assertEqual(
-            mock_object._description, '<function MyTestFunction>')
+            mock_object._description,
+            'function mox_test_helper.MyTestFunction')
+
+    def testDescriptionMockedObject(self):
+        obj = FarAwayClass()
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(obj, 'distantMethod')
+        obj.distantMethod().AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertEqual(
+            obj.distantMethod._description, 'FarAwayClass.distantMethod')
+
+    def testDescriptionModuleFunction(self):
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(mox_test_helper, 'MyTestFunction')
+        mox_test_helper.MyTestFunction(one=1, two=2).AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertEqual(
+            mox_test_helper.MyTestFunction._description,
+            'function mox_test_helper.MyTestFunction')
+
+    def testDescriptionMockedClass(self):
+        obj = FarAwayClass()
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(FarAwayClass, 'distantMethod')
+        obj.distantMethod().AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertEqual(
+            obj.distantMethod._description, 'FarAwayClass.distantMethod')
+
+    def testDescriptionClassMethod(self):
+        obj = mox_test_helper.SpecialClass()
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(mox_test_helper.SpecialClass, 'ClassMethod')
+        mox_test_helper.SpecialClass.ClassMethod().AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertEqual(
+            obj.ClassMethod._description, 'SpecialClass.ClassMethod')
+
+    def testDescriptionStaticMethodMockClass(self):
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(mox_test_helper.SpecialClass, 'StaticMethod')
+        mox_test_helper.SpecialClass.StaticMethod().AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertIn(
+            mox_test_helper.SpecialClass.StaticMethod._description,
+            ['SpecialClass.StaticMethod',
+             'function mox_test_helper.StaticMethod'])
+
+    def testDescriptionStaticMethodMockInstance(self):
+        obj = mox_test_helper.SpecialClass()
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(obj, 'StaticMethod')
+        obj.StaticMethod().AndReturn(True)
+
+        mock.ReplayAll()
+        self.assertIn(
+            obj.StaticMethod._description,
+            ['SpecialClass.StaticMethod',
+             'function mox_test_helper.StaticMethod'])
 
     def testSetupModeWithValidCall(self):
         """Verify the mock object properly mocks a basic method call."""
