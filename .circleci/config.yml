@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/pymox
+    docker:
+      - image: circleci/python
+    environment:
+      CODECOV_TOKEN: 07a918bb-31b1-49fc-b4d9-55db4858a3fd
+      CACHE_KEY: "pyenv local 2.7.13 3.3.6 3.4.6 3.5.3 3.6.2"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-$CACHE_KEY-{{ checksum "tox.ini" }}
+          - v1-dependencies-
+      - run:
+          command: |
+            sudo pip install codecov==1.6.3 six
+            sudo pip install tox tox-pyenv flake8
+      - run:
+          command: |
+            curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+            echo 'export PATH="/home/circleci/.pyenv/bin:$PATH"' >>~/.bash_profile
+            echo 'eval "$(pyenv init -)"' >>~/.bash_profile
+            echo 'eval "$(pyenv virtualenv-init -)"' >>~/.bash_profile
+            source ~/.bash_profile
+            parallel -j 5 pyenv install ::: 2.7.13 3.3.6 3.4.6 3.5.3 3.6.2
+            pyenv local 2.7.13 3.3.6 3.4.6 3.5.3 3.6.2
+      - save_cache:
+          paths:
+            - ./.pyenv
+          key: v1-dependencies-$CACHE_KEY-{{ checksum "tox.ini" }}
+      - run:
+          command: |
+            source ~/.bash_profile
+            flake8
+            tox
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+      - run: codecov --token=$CODECOV_TOKEN
